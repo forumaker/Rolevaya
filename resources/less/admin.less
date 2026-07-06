@@ -1,0 +1,500 @@
+.RolevayaAdmin {
+  --mst-radius-lg: 16px;
+  --mst-radius-md: 12px;
+  --mst-radius-sm: 10px;
+  --mst-border: var(--control-bg, #e5e7eb);
+  --mst-surface: var(--body-bg, #fff);
+  --mst-surface-soft: color-mix(in srgb, var(--control-bg, #e5e7eb) 22%, transparent);
+  --mst-surface-softer: color-mix(in srgb, var(--control-bg, #e5e7eb) 14%, transparent);
+  --mst-text: var(--text-color, #111827);
+  --mst-muted: var(--muted-color, #6b7280);
+  --mst-primary: var(--primary-color, #6d28d9);
+  --mst-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --mst-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --mst-transition: 180ms ease;
+}
+
+.RolevayaAdmin-shell {
+  max-width: 1200px;
+  margin: 28px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.RolevayaAdminSection {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.RolevayaAdminSection-header {
+  padding: 0 0 12px;
+  border-bottom: none;
+  background: transparent;
+}
+
+.RolevayaAdminSection-titleWrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.RolevayaAdminSection-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--mst-primary) 10%, transparent);
+  color: var(--mst-primary);
+  flex: 0 0 auto;
+}
+
+.RolevayaAdminSection-titleText h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--mst-text);
+}
+
+.RolevayaAdminSection-titleText p {
+  margin: 0;
+  color: var(--mst-muted);
+  line-height: 1.55;
+}
+
+.RolevayaAdminSection-content {
+  padding: 0;
+}
+
+.RolevayaAdminGrid {
+  display: grid;
+  gap: 18px;
+}
+
+.RolevayaAdminGrid--bonus,
+.RolevayaAdminGrid--perk {
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  align-items: start;
+}
+
+.RolevayaAdminPanel,
+.RolevayaAdminAside {
+  min-width: 0;
+}
+
+.RolevayaAdminPanel {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.RolevayaAdminStack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.RolevayaAdminToolbar {
+  padding: 18px;
+  border: 1px solid var(--mst-border);
+  border-radius: var(--mst-radius-md);
+  background: var(--mst-surface-soft);
+}
+
+.RolevayaAdminToolbar-field .helpText {
+  margin-top: 10px;
+}
+
+.RolevayaAdmin .Form-group {
+  margin: 0;
+}
+
+.RolevayaAdmin .Form-group + .Form-group {
+  margin-top: 18px;
+}
+
+.RolevayaAdmin .Form-group label {
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--mst-text);
+  margin-bottom: 8px;
+}
+
+.RolevayaAdmin .Form-group .helpText {
+  margin-top: 10px;
+  padding-left: 10px;
+  border-left: 2px solid var(--mst-border);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--mst-muted);
+}
+
+.RolevayaAdmin input[type='text'],
+.RolevayaAdmin input[type='number'],
+.RolevayaAdmin input[type='color'],
+.RolevayaAdmin select,
+.RolevayaAdmin textarea,
+.RolevayaAdmin .FormControl {
+  width: 100%;
+  max-width: 560px;
+  padding: 11px 14px;
+  border: 1px solid var(--mst-border);
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--mst-surface);
+  color: var(--mst-text);
+  transition: border-color var(--mst-transition), box-shadow var(--mst-transition), background var(--mst-transition);
+  box-sizing: border-box;
+}
+
+.RolevayaAdmin textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.RolevayaAdmin input[type='number'] {
+  max-width: 180px;
+}
+
+.RolevayaAdmin input[type='color'] {
+  width: 64px;
+  min-width: 64px;
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.RolevayaAdmin input[type='text']:focus,
+.RolevayaAdmin input[type='number']:focus,
+.RolevayaAdmin input[type='color']:focus,
+.RolevayaAdmin select:focus,
+.RolevayaAdmin textarea:focus,
+.RolevayaAdmin .FormControl:focus {
+  border-color: var(--mst-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mst-primary) 12%, transparent);
+}
+
+.RolevayaToggleGroup {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.RolevayaInlineRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.RolevayaColorRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.RolevayaInput--medium {
+  max-width: 22rem !important;
+}
+
+.RolevayaInput--colorText {
+  max-width: 12rem !important;
+}
+
+.RolevayaPreviewCard {
+  padding: 18px;
+  border: 1px solid var(--mst-border);
+  border-radius: var(--mst-radius-md);
+  background: var(--mst-surface-soft);
+  box-shadow: var(--mst-shadow-sm);
+  position: sticky;
+  top: 24px;
+}
+
+.RolevayaPreviewCard-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.RolevayaPreviewCard-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mst-surface);
+  border: 1px solid var(--mst-border);
+  font-size: 18px;
+  flex: 0 0 auto;
+}
+
+.RolevayaPreviewCard-title {
+  font-weight: 700;
+  color: var(--mst-text);
+  line-height: 1.3;
+}
+
+.RolevayaPreviewCard-subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--mst-muted);
+}
+
+.RolevayaPreviewCard-body {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--mst-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.RolevayaEmptyState {
+  padding: 34px 20px;
+  border: 1px dashed var(--mst-border);
+  border-radius: var(--mst-radius-md);
+  background: var(--mst-surface-soft);
+  text-align: center;
+}
+
+.RolevayaEmptyState-icon {
+  font-size: 28px;
+  color: var(--mst-primary);
+  margin-bottom: 12px;
+}
+
+.RolevayaEmptyState-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--mst-text);
+  margin-bottom: 6px;
+}
+
+.RolevayaEmptyState-text {
+  color: var(--mst-muted);
+  line-height: 1.55;
+}
+
+.RolevayaGroupCard {
+  padding: 18px;
+  border: 1px solid var(--mst-border);
+  border-radius: var(--mst-radius-md);
+  background: var(--mst-surface-soft);
+  box-shadow: var(--mst-shadow-sm);
+}
+
+.RolevayaGroupCard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--mst-border);
+}
+
+.RolevayaGroupCard.is-collapsed .RolevayaGroupCard-header {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.RolevayaGroupCard-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.RolevayaGroupCard-toggle i {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--mst-muted);
+  flex: 0 0 auto;
+}
+
+.RolevayaGroupCard-titleWrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.RolevayaGroupCard-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--mst-text);
+  line-height: 1.3;
+}
+
+.RolevayaGroupCard-subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--mst-muted);
+}
+
+.RolevayaGroupCard-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+
+.RolevayaPerksList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.RolevayaPerkCard {
+  padding: 16px;
+  border: 1px solid var(--mst-border);
+  border-radius: var(--mst-radius-md);
+  background: var(--mst-surface);
+  box-shadow: var(--mst-shadow-sm);
+}
+
+.RolevayaPerkCard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.RolevayaPerkCard-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--mst-text);
+}
+
+.RolevayaPerkCard-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mst-primary) 12%, transparent);
+  color: var(--mst-primary);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.RolevayaAdminSubmit {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.RolevayaAdmin .Button,
+.RolevayaAdmin button,
+.RolevayaAdmin a {
+  outline: none;
+}
+
+.RolevayaAdmin .Button:focus-visible,
+.RolevayaAdmin button:focus-visible,
+.RolevayaAdmin a:focus-visible {
+  outline: 2px solid var(--mst-primary);
+  outline-offset: 2px;
+}
+
+.RolevayaAdminSection + .RolevayaAdminSection {
+  margin-top: 28px;
+}
+
+@media (max-width: 980px) {
+  .RolevayaAdminGrid--bonus,
+  .RolevayaAdminGrid--perk {
+    grid-template-columns: 1fr;
+  }
+
+  .RolevayaPreviewCard {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .RolevayaAdmin-shell {
+    gap: 18px;
+    margin-top: 20px;
+  }
+
+  .RolevayaAdminSection-content,
+  .RolevayaAdminSection-header {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .RolevayaAdminToolbar,
+  .RolevayaGroupCard,
+  .RolevayaPerkCard {
+    padding: 14px;
+  }
+
+  .RolevayaGroupCard-header,
+  .RolevayaGroupCard-actions,
+  .RolevayaPerkCard-header,
+  .RolevayaInlineRow,
+  .RolevayaColorRow {
+    align-items: stretch;
+  }
+
+  .RolevayaGroupCard-header,
+  .RolevayaPerkCard-header {
+    flex-direction: column;
+  }
+
+  .RolevayaGroupCard-toggle {
+    width: 100%;
+  }
+
+  .RolevayaGroupCard-actions .Button,
+  .RolevayaInlineRow .FormControl,
+  .RolevayaInlineRow .Button,
+  .RolevayaColorRow .FormControl {
+    width: 100%;
+    max-width: none;
+  }
+
+  .RolevayaAdmin input[type='number'] {
+    max-width: none;
+  }
+
+  .RolevayaAdminSubmit {
+    justify-content: stretch;
+  }
+
+  .RolevayaAdminSubmit .Button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .RolevayaAdmin * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

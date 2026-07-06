@@ -1,0 +1,1071 @@
+.RolevayaTabs {
+  --ms-pill-bg: color-mix(in srgb, var(--text-color) 8%, var(--control-bg));
+  --ms-pill-border: color-mix(in srgb, var(--text-color) 14%, var(--control-bg));
+
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+.RolevayaToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.RolevayaToolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.RolevayaFilterBtn,
+.RolevayaRefreshBtn,
+.RolevayaSortPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--control-bg);
+  background: var(--control-bg);
+  // These share the `Button` core class for Flarum's default focus/hover
+  // behavior, but that class also brings its own box-shadow/gradient —
+  // visible as a lighter double rim around the pill, especially once the
+  // background is a solid color like --primary-color on .active. Cleared
+  // explicitly so only this rule's flat background/border show.
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--muted-color);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.RolevayaFilterBtn:hover,
+.RolevayaRefreshBtn:hover,
+.RolevayaSortPill:hover {
+  color: var(--heading-color, var(--text-color));
+}
+
+.RolevayaFilterBtn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--button-primary-color, #fff);
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.RolevayaRefreshBtn {
+  i {
+    font-size: 13px;
+  }
+
+  i.is-spinning {
+    animation: RolevayaSpin 0.9s linear infinite;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@keyframes RolevayaSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.RolevayaSortPill {
+  position: relative;
+
+  select.FormControl {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  &::after {
+    content: '▼';
+    font-size: 9px;
+    font-weight: 900;
+    opacity: 0.7;
+  }
+}
+
+@media (max-width: 768px) {
+  .RolevayaToolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .RolevayaToolbar-group--filters {
+    justify-content: flex-start;
+  }
+}
+
+.RolevayaTabPanel {
+  .RolevayaTitle {
+    color: var(--text-color);
+
+    a {
+      color: inherit !important;
+      text-decoration: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      a:hover { text-decoration: underline; }
+    }
+
+    a:focus-visible {
+      outline: 2px solid var(--control-bg);
+      outline-offset: 3px;
+      border-radius: 6px;
+    }
+  }
+
+  .RolevayaCards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  @media (min-width: 900px) {
+    .RolevayaCards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .RolevayaCards {
+      padding-inline: 12px;
+      box-sizing: border-box;
+    }
+  }
+
+  .RolevayaCard {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 0;
+    background: transparent;
+    padding: 14px 16px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+    animation: RolevayaFadeIn 0.25s ease both;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .RolevayaCard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: 0;
+    background: rgba(148, 163, 184, 0.08);
+  }
+
+  .RolevayaCard:has(.RolevayaRank--1)::before {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.16), rgba(168, 85, 247, 0.06));
+  }
+
+  .RolevayaCard:has(.RolevayaRank--2)::before {
+    background: linear-gradient(135deg, rgba(245, 197, 66, 0.18), rgba(245, 197, 66, 0.07));
+  }
+
+  .RolevayaCard:has(.RolevayaRank--3)::before {
+    background: linear-gradient(135deg, rgba(176, 190, 197, 0.2), rgba(176, 190, 197, 0.08));
+  }
+
+  .RolevayaCard:has(.RolevayaRank--4)::before {
+    background: linear-gradient(135deg, rgba(213, 156, 106, 0.18), rgba(213, 156, 106, 0.07));
+  }
+
+  .RolevayaCard > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .RolevayaCard:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(148, 163, 184, 0.28);
+    }
+
+    .RolevayaCard:has(.RolevayaRank--1):hover {
+      box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(168, 85, 247, 0.45);
+    }
+
+    .RolevayaCard:has(.RolevayaRank--2):hover {
+      box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(245, 197, 66, 0.42);
+    }
+
+    .RolevayaCard:has(.RolevayaRank--3):hover {
+      box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(176, 190, 197, 0.55);
+    }
+
+    .RolevayaCard:has(.RolevayaRank--4):hover {
+      box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(213, 156, 106, 0.48);
+    }
+  }
+
+  @keyframes RolevayaFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .RolevayaCardHeader {
+    margin-bottom: 14px;
+  }
+
+  .RolevayaCardHeader--stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .RolevayaHeaderRow--top {
+    display: flex;
+    gap: 10px;
+    min-width: 0;
+    align-items: center;
+  }
+
+  .RolevayaHeaderRow--player {
+    display: block;
+  }
+
+  .RolevayaRank {
+    color: #111827;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    line-height: 1;
+    flex: 0 0 auto;
+    background: var(--control-bg);
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.06) inset,
+      0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .RolevayaRank--1 { background: #a855f7; }
+  .RolevayaRank--2 { background: #f5c542; }
+  .RolevayaRank--3 { background: #b0bec5; }
+  .RolevayaRank--4 { background: #d59c6a; }
+
+  .RolevayaRank--1,
+  .RolevayaRank--2,
+  .RolevayaRank--3,
+  .RolevayaRank--4 {
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.14) inset,
+      0 10px 20px rgba(0, 0, 0, 0.18);
+  }
+
+  .RolevayaTitle {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.25;
+
+    a {
+      display: inline-block;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .RolevayaMeta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    align-items: center;
+  }
+
+  .RolevayaAvatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 16px;
+    object-fit: cover;
+    background: var(--control-bg);
+    flex: 0 0 auto;
+    display: block;
+    vertical-align: middle;
+  }
+
+  .RolevayaPlayer {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+
+  .RolevayaCardHeader--activity.RolevayaCardHeader--stack {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .RolevayaCardHeader--activity .RolevayaHeaderRow--top,
+  .RolevayaCardHeader--activity .RolevayaHeaderRow--player {
+    display: contents;
+  }
+
+  .RolevayaCardHeader--activity .RolevayaMeta {
+    min-width: 0;
+    flex: 1 1 auto;
+    align-items: center;
+  }
+
+  .RolevayaAvatarLink {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit !important;
+  }
+
+  .RolevayaStatsGrid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .RolevayaStat--wide2 {
+    grid-column: 1 / span 2;
+  }
+
+  @media (min-width: 900px) {
+    .RolevayaStatsGrid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .RolevayaStat--wide2 {
+      grid-column: span 2;
+    }
+
+    .RolevayaStat--wide2 + .RolevayaStat--wide2 {
+      grid-column: 3 / span 2;
+    }
+  }
+
+  .RolevayaStat {
+    border-radius: 12px;
+    background: var(--control-bg);
+    padding: 12px 10px;
+    text-align: center;
+  }
+
+  .RolevayaCard:has(.RolevayaRank--1) .RolevayaStat { background: rgba(168, 85, 247, 0.1); }
+  .RolevayaCard:has(.RolevayaRank--2) .RolevayaStat { background: rgba(245, 197, 66, 0.1); }
+  .RolevayaCard:has(.RolevayaRank--3) .RolevayaStat { background: rgba(176, 190, 197, 0.12); }
+  .RolevayaCard:has(.RolevayaRank--4) .RolevayaStat { background: rgba(213, 156, 106, 0.11); }
+
+  .RolevayaCard:has(.RolevayaRank--1) .RolevayaArcsBtn { background: rgba(168, 85, 247, 0.1); }
+  .RolevayaCard:has(.RolevayaRank--2) .RolevayaArcsBtn { background: rgba(245, 197, 66, 0.1); }
+  .RolevayaCard:has(.RolevayaRank--3) .RolevayaArcsBtn { background: rgba(176, 190, 197, 0.12); }
+  .RolevayaCard:has(.RolevayaRank--4) .RolevayaArcsBtn { background: rgba(213, 156, 106, 0.11); }
+
+  .RolevayaStatLabel {
+    font-size: 12px;
+    opacity: 0.82;
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+
+  .RolevayaStatLabel--icon {
+    font-size: 14px;
+    line-height: 1;
+    margin-bottom: 6px;
+
+    i {
+      display: inline-block;
+      font-size: 14px;
+      line-height: 1;
+      transform: translateY(1px);
+    }
+  }
+
+  .RolevayaStatValue {
+    font-weight: 650;
+    font-size: 14px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .RolevayaPlayerLink {
+    color: var(--text-color) !important;
+    font: inherit;
+    text-decoration: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .RolevayaPlayerLink:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .RolevayaCardFooter {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .RolevayaArcsBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    flex: 1 1 0;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: none;
+    background: var(--control-bg);
+    color: var(--text-color);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+
+    i { font-size: 14px; color: var(--text-color); opacity: 0.7; }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .RolevayaArcsBtn:hover {
+      background: color-mix(in srgb, var(--text-color) 6%, var(--control-bg));
+    }
+
+    .RolevayaCard:has(.RolevayaRank--1) .RolevayaArcsBtn:hover { background: rgba(168, 85, 247, 0.16); }
+    .RolevayaCard:has(.RolevayaRank--2) .RolevayaArcsBtn:hover { background: rgba(245, 197, 66, 0.16); }
+    .RolevayaCard:has(.RolevayaRank--3) .RolevayaArcsBtn:hover { background: rgba(176, 190, 197, 0.18); }
+    .RolevayaCard:has(.RolevayaRank--4) .RolevayaArcsBtn:hover { background: rgba(213, 156, 106, 0.17); }
+  }
+
+  .RolevayaPlayerLink:focus-visible {
+    outline: 2px solid var(--control-bg);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+}
+
+.RolevayaCardPerksCorner {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.RolevayaPerkIconButton {
+  width: 26px;
+  height: 26px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  color: inherit;
+  line-height: 1;
+  transition: transform 0.14s ease, opacity 0.14s ease;
+}
+
+.RolevayaPerkIconButton i,
+.RolevayaPerkIconButton span[aria-hidden='true'] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  color: currentColor !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+.RolevayaPerkIconButton:hover {
+  transform: scale(1.04);
+  opacity: 0.95;
+}
+
+.RolevayaPerkIconButton:active {
+  transform: scale(0.98);
+}
+
+.RolevayaPerkIconButton:focus,
+.RolevayaPerkIconButton:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.RolevayaPerkIconButton.is-open {
+  transform: scale(1.04);
+}
+
+.RolevayaPerkPopover {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.RolevayaPerkTitle {
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.25;
+  margin: 0 0 6px;
+}
+
+.RolevayaPerkDescription {
+  font-size: 12.5px;
+  line-height: 1.45;
+  opacity: 0.92;
+}
+
+html[data-theme='dark'] .RolevayaTabPanel .RolevayaRank:not(.RolevayaRank--1):not(.RolevayaRank--2):not(.RolevayaRank--3):not(.RolevayaRank--4),
+body[data-theme='dark'] .RolevayaTabPanel .RolevayaRank:not(.RolevayaRank--1):not(.RolevayaRank--2):not(.RolevayaRank--3):not(.RolevayaRank--4),
+.App--dark .RolevayaTabPanel .RolevayaRank:not(.RolevayaRank--1):not(.RolevayaRank--2):not(.RolevayaRank--3):not(.RolevayaRank--4),
+.dark .RolevayaTabPanel .RolevayaRank:not(.RolevayaRank--1):not(.RolevayaRank--2):not(.RolevayaRank--3):not(.RolevayaRank--4) {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.RolevayaHomeWidget {
+  width: 100%;
+  margin: 32px 0 10px;
+}
+
+.RolevayaHomeWidget-box {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-sizing: border-box;
+}
+
+.RolevayaHomeWidget-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  // Matches .RolevayaHomeWidget-actions' margin-top exactly, so the gap
+  // above the cards equals the gap below them.
+  margin-bottom: 16px;
+}
+
+.RolevayaHomeWidget-state {
+  margin: 0;
+  opacity: 0.8;
+  text-align: center;
+}
+
+.RolevayaHomeWidget-stage {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  align-items: center;
+  column-gap: 8px;
+  width: 100%;
+}
+
+.RolevayaHomeWidget-viewport {
+  grid-column: 2;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.RolevayaHomeWidget-track {
+  display: flex;
+  transition: transform 0.28s ease;
+  will-change: transform;
+}
+
+.RolevayaHomeWidget-slide {
+  flex: 0 0 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 8px;
+}
+
+.RolevayaHomeWidget-slide:first-child {
+  padding-left: 0;
+}
+
+.RolevayaHomeWidget-slide:last-child {
+  padding-right: 0;
+}
+
+.RolevayaHomeWidget-arrow {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 40px;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  opacity: 0.95;
+}
+
+.RolevayaHomeWidget-arrow--desktop {
+  display: inline-flex;
+}
+
+.RolevayaHomeWidget-arrow--prev {
+  grid-column: 1;
+  justify-self: center;
+  align-self: center;
+  transform: translateY(-2px);
+}
+
+.RolevayaHomeWidget-arrow--next {
+  grid-column: 3;
+  justify-self: center;
+  align-self: center;
+  transform: translateY(-2px);
+}
+
+.RolevayaHomeWidget-arrowWrap {
+  display: none;
+}
+
+.RolevayaHomeCard {
+  min-height: 170px;
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.RolevayaHomeCard-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.RolevayaHomeCard-rank {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.RolevayaHomeCard-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.RolevayaHomeCard-avatarLink {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.RolevayaHomeCard-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  object-fit: cover;
+  display: block;
+}
+
+.RolevayaHomeCard-avatar--placeholder {
+  display: block;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.RolevayaHomeCard-userMeta {
+  min-width: 0;
+}
+
+.RolevayaHomeCard-name {
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.RolevayaHomeCard-name a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.RolevayaHomeCard-name a:hover {
+  text-decoration: underline;
+}
+
+.RolevayaHomeCard-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.RolevayaHomeCard-stat {
+  min-width: 0;
+  box-sizing: border-box;
+  border-radius: 14px;
+  padding: 11px 13px;
+}
+
+.RolevayaHomeCard-statLabel {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.2;
+  opacity: 0.78;
+}
+
+.RolevayaHomeCard-statValue {
+  display: block;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+html[data-theme='light'] .RolevayaHomeWidget-arrow,
+body[data-theme='light'] .RolevayaHomeWidget-arrow,
+.App:not(.App--dark) .RolevayaHomeWidget-arrow {
+  color: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  background: rgba(15, 23, 42, 0.05) !important;
+}
+
+html[data-theme='light'] .RolevayaHomeWidget-arrow:hover,
+body[data-theme='light'] .RolevayaHomeWidget-arrow:hover,
+.App:not(.App--dark) .RolevayaHomeWidget-arrow:hover {
+  color: rgba(15, 23, 42, 0.85);
+  border-color: rgba(15, 23, 42, 0.14) !important;
+  background: rgba(15, 23, 42, 0.07) !important;
+}
+
+html[data-theme='light'] .RolevayaHomeCard,
+body[data-theme='light'] .RolevayaHomeCard,
+.App:not(.App--dark) .RolevayaHomeCard {
+  background: rgba(15, 23, 42, 0.045);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.02);
+}
+
+html[data-theme='light'] .RolevayaHomeCard-rank,
+body[data-theme='light'] .RolevayaHomeCard-rank,
+.App:not(.App--dark) .RolevayaHomeCard-rank {
+  background: rgba(15, 23, 42, 0.07);
+  border: 0;
+}
+
+html[data-theme='light'] .RolevayaHomeCard-stat,
+body[data-theme='light'] .RolevayaHomeCard-stat,
+.App:not(.App--dark) .RolevayaHomeCard-stat {
+  background: rgba(15, 23, 42, 0.04);
+  border: 0;
+  box-shadow: none;
+}
+
+html[data-theme='dark'] .RolevayaHomeWidget-arrow,
+body[data-theme='dark'] .RolevayaHomeWidget-arrow,
+.App--dark .RolevayaHomeWidget-arrow,
+.dark .RolevayaHomeWidget-arrow {
+  color: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02) !important;
+}
+
+html[data-theme='dark'] .RolevayaHomeWidget-arrow:hover,
+body[data-theme='dark'] .RolevayaHomeWidget-arrow:hover,
+.App--dark .RolevayaHomeWidget-arrow:hover,
+.dark .RolevayaHomeWidget-arrow:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+html[data-theme='dark'] .RolevayaHomeCard,
+body[data-theme='dark'] .RolevayaHomeCard,
+.App--dark .RolevayaHomeCard,
+.dark .RolevayaHomeCard {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015)) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme='dark'] .RolevayaHomeCard-rank,
+body[data-theme='dark'] .RolevayaHomeCard-rank,
+.App--dark .RolevayaHomeCard-rank,
+.dark .RolevayaHomeCard-rank {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme='dark'] .RolevayaHomeCard-stat,
+body[data-theme='dark'] .RolevayaHomeCard-stat,
+.App--dark .RolevayaHomeCard-stat,
+.dark .RolevayaHomeCard-stat {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+  .RolevayaHomeWidget {
+    margin: 32px 0 8px;
+  }
+
+  .RolevayaHomeWidget-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .RolevayaHomeWidget-viewport {
+    width: 100%;
+    order: 1;
+    overflow: hidden;
+  }
+
+  .RolevayaHomeWidget-slide {
+    padding: 0;
+  }
+
+  .RolevayaHomeCard {
+    min-height: auto;
+    padding: 14px;
+    width: 100%;
+  }
+
+  .RolevayaHomeCard-top {
+    margin-bottom: 12px;
+  }
+
+  .RolevayaHomeCard-stats {
+    gap: 8px;
+  }
+
+  .RolevayaHomeCard-stat {
+    padding: 10px 12px;
+  }
+
+  .RolevayaHomeWidget-arrow--desktop {
+    display: none;
+  }
+
+  .RolevayaHomeWidget-arrowWrap {
+    order: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    // Full width so justify-content:center centers the arrow pair against
+    // the card above it — without this the wrap just shrinks to its
+    // content and drifts off-center. See the note near the bottom of this
+    // file for why there's no middle element between the arrows anymore.
+    width: 100%;
+  }
+
+  .RolevayaHomeWidget-arrow--mobile {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    transform: none !important;
+  }
+}
+
+.RolevayaHomeWidget-viewport {
+  touch-action: pan-y;
+}
+
+.RolevayaHomeWidget-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.RolevayaHomeWidget-actions--desktop {
+  display: flex;
+}
+
+.RolevayaHomeWidget-actions--mobile {
+  display: none;
+}
+
+.RolevayaHomeWidget-hallLink,
+.RolevayaHomeWidget-hallLink:hover,
+.RolevayaHomeWidget-hallLink:focus,
+.RolevayaHomeWidget-hallLink:active {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none !important;
+  background: transparent;
+  border: 1px solid var(--control-bg);
+  color: var(--text-color);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.RolevayaHomeWidget-hallLink:hover,
+.RolevayaHomeWidget-hallLink:focus {
+  border-color: var(--primary-color);
+}
+
+.RolevayaHomeWidget-hallLinkIcon {
+  margin-right: 8px;
+  font-size: 13px;
+  color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .RolevayaHomeWidget-actions--desktop {
+    display: none;
+  }
+
+  .RolevayaHomeWidget-actions--mobile {
+    display: flex;
+    margin-top: 12px;
+  }
+}
+
+// The tooltip that used to sit here (RolevayaTooltip / RolevayaHomeWidget-hint)
+// was removed from the homepage widget entirely — both tabs now show two
+// action links side by side instead (see renderHallOfFameLink() /
+// renderCreateCharacterLink() / renderArenaTagLink() / renderHowToPlayButton()
+// in HomepageActivitySlider.tsx), and .RolevayaHomeWidget-arrowWrap's flex
+// rule above centers the arrow pair on its own without a middle element to
+// balance against.
+
+.CompletedEntriesModal-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.CompletedEntriesModal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.CompletedEntriesModal-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--ms-pill-border);
+  background: var(--ms-pill-bg);
+  padding: 12px 14px;
+}
+
+.CompletedEntriesModal-index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-color) 12%, var(--control-bg));
+  color: var(--text-color);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.CompletedEntriesModal-info {
+  min-width: 0;
+}
+
+.CompletedEntriesModal-title {
+  display: block;
+  font-weight: 650;
+  color: var(--text-color) !important;
+  text-decoration: none;
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.3;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .CompletedEntriesModal-title:hover {
+    text-decoration: underline;
+  }
+}
+
+.CompletedEntriesModal-discussion {
+  margin-top: 3px;
+  font-size: 12px;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
