@@ -12,7 +12,8 @@ class ParseEpisodeCompletion
 {
     public function __construct(
         protected EpisodeCompletionParser $parser,
-        protected MentionedUserResolver $resolver
+        protected MentionedUserResolver $resolver,
+        protected RoleplayTags $tags
     ) {}
 
     public function handle(Saved $event): void
@@ -28,7 +29,7 @@ class ParseEpisodeCompletion
             return;
         }
 
-        if (!$discussion->tags()->where('slug', RoleplayTags::EPISODES)->exists()) {
+        if (!$discussion->tags()->where('slug', $this->tags->episodes())->exists()) {
             return;
         }
 

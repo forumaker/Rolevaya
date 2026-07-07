@@ -16,7 +16,8 @@ class UserActivityLeaderboardController implements RequestHandlerInterface
 {
     public function __construct(
         protected ActivityLeaderboardRepository $repository,
-        protected SettingsRepositoryInterface $settings
+        protected SettingsRepositoryInterface $settings,
+        protected RoleplayTags $tags
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -42,17 +43,19 @@ class UserActivityLeaderboardController implements RequestHandlerInterface
         if ($limit > 200) $limit = 200;
 
         $excludeCurators = (int) Arr::get($query, 'exclude_curators', 0) === 1;
+        // Empty by default: forum-specific IDs an admin must configure
+        // themselves (see admin settings page).
         $curatorUserIds = SettingsIdList::read(
             $this->settings,
             'forumaker-rolevaya.curatorUserIds',
-            [10, 27, 14]
+            []
         );
 
         $rows = $this->repository->topActivity($period, $sort, $minPosts, $limit, $excludeCurators, $curatorUserIds);
 
         $res = new JsonResponse([
             'period' => $period,
-            'scope_tag' => RoleplayTags::ROLE,
+            'scope_tag' => $this->tags->role(),
             'sort' => $sort,
             'min_posts' => $minPosts,
             'limit' => $limit,

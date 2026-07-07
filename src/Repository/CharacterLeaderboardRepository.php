@@ -17,7 +17,8 @@ use Illuminate\Support\Collection;
 class CharacterLeaderboardRepository
 {
     public function __construct(
-        protected ConnectionInterface $db
+        protected ConnectionInterface $db,
+        protected RoleplayTags $tags
     ) {}
 
     /**
@@ -25,7 +26,7 @@ class CharacterLeaderboardRepository
      */
     public function topCharacters(string $sort, int $limit, bool $excludeGuardians, array $excludeDiscussionIds): Collection
     {
-        $charactersTag = RoleplayTags::CHARACTERS;
+        $charactersTag = $this->tags->characters();
 
         $q = $this->db->table('character_sheets as cs')
             ->join('discussions as d', 'd.id', '=', 'cs.discussion_id')

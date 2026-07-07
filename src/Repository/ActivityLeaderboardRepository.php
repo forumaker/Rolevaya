@@ -14,7 +14,8 @@ use Illuminate\Support\Collection;
 class ActivityLeaderboardRepository
 {
     public function __construct(
-        protected ConnectionInterface $db
+        protected ConnectionInterface $db,
+        protected RoleplayTags $tags
     ) {}
 
     /**
@@ -28,7 +29,7 @@ class ActivityLeaderboardRepository
         bool $excludeCurators,
         array $excludeUserIds
     ): Collection {
-        $roleTag = RoleplayTags::ROLE;
+        $roleTag = $this->tags->role();
 
         $arcCounts = $this->db->table('completed_arcs')
             ->select('user_id', $this->db->raw('COUNT(*) as cnt'))

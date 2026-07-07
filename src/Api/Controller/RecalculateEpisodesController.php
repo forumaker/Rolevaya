@@ -3,7 +3,8 @@
 namespace forumaker\Rolevaya\Api\Controller;
 
 use Flarum\Http\RequestUtil;
-use forumaker\Rolevaya\Service\EpisodeCompletionBackfill;
+use forumaker\Rolevaya\Job\RecalculateEpisodesJob;
+use Illuminate\Contracts\Queue\Queue;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -12,7 +13,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 class RecalculateEpisodesController implements RequestHandlerInterface
 {
     public function __construct(
-        protected EpisodeCompletionBackfill $backfill
+        protected Queue $queue
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -20,11 +21,16 @@ class RecalculateEpisodesController implements RequestHandlerInterface
         $actor = RequestUtil::getActor($request);
         $actor->assertAdmin();
 
-        $saved = $this->backfill->run();
+        // Scanning every episode discussion can take a while on a large
+        // forum, so this is queued rather than run synchronously inside the
+        // HTTP request (see RecalculateEpisodesJob). With the default
+        // "sync" queue driver this still runs immediately; with a database
+        // or Redis driver configured it's picked up by the queue worker.
+        $this->queue->push(new RecalculateEpisodesJob());
 
         return new JsonResponse([
             'ok' => true,
-            'saved' => $saved,
-        ]);
+            'queued' => true,
+        ], 202);
     }
 }

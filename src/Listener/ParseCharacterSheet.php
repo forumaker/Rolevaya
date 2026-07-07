@@ -10,7 +10,8 @@ use forumaker\Rolevaya\Service\CharacterSheetParser;
 class ParseCharacterSheet
 {
     public function __construct(
-        protected CharacterSheetParser $parser
+        protected CharacterSheetParser $parser,
+        protected RoleplayTags $tags
     ) {}
 
     public function handle(Saved $event): void
@@ -26,7 +27,7 @@ class ParseCharacterSheet
             return;
         }
 
-        if (!$discussion->tags()->where('slug', RoleplayTags::CHARACTERS)->exists()) {
+        if (!$discussion->tags()->where('slug', $this->tags->characters())->exists()) {
             return;
         }
 

@@ -39,10 +39,12 @@ class ArenaLeaderboardController implements RequestHandlerInterface
         if ($limit > 200) $limit = 200;
 
         $excludeCurators = (int) Arr::get($query, 'exclude_curators', 0) === 1;
+        // Empty by default: forum-specific IDs an admin must configure
+        // themselves (see admin settings page).
         $curatorUserIds = SettingsIdList::read(
             $this->settings,
             'forumaker-rolevaya.curatorUserIds',
-            [10, 27, 14]
+            []
         );
 
         $rows = $this->repository->topArena($sort, $limit, $excludeCurators, $curatorUserIds);

@@ -12,7 +12,8 @@ class ParseArcCompletion
 {
     public function __construct(
         protected ArcCompletionParser $parser,
-        protected MentionedUserResolver $resolver
+        protected MentionedUserResolver $resolver,
+        protected RoleplayTags $tags
     ) {}
 
     public function handle(Saved $event): void
@@ -28,7 +29,7 @@ class ParseArcCompletion
             return;
         }
 
-        if (!$discussion->tags()->where('slug', RoleplayTags::ROLE)->exists()) {
+        if (!$discussion->tags()->where('slug', $this->tags->role())->exists()) {
             return;
         }
 

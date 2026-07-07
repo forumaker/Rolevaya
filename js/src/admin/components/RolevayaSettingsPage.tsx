@@ -106,6 +106,10 @@ export default class RolevayaSettingsPage extends ExtensionPage {
   excludeCharacterDiscussionIdsText = '';
   activityPeriodDaysText = '0';
 
+  tagCharacters = 'characters';
+  tagRole = 'role';
+  tagEpisodes = 'episodes';
+
   oninit(vnode: any) {
     super.oninit(vnode);
 
@@ -121,6 +125,10 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     this.curatorUserIdsText = this.parseIdListSetting('forumaker-rolevaya.curatorUserIds');
     this.excludeCharacterDiscussionIdsText = this.parseIdListSetting('forumaker-rolevaya.excludeCharacterDiscussionIds');
     this.activityPeriodDaysText = String(parseInt(this.setting('forumaker-rolevaya.activityPeriodDays')() || '0', 10) || 0);
+
+    this.tagCharacters = this.setting('forumaker-rolevaya.tagCharacters')() || 'characters';
+    this.tagRole = this.setting('forumaker-rolevaya.tagRole')() || 'role';
+    this.tagEpisodes = this.setting('forumaker-rolevaya.tagEpisodes')() || 'episodes';
   }
 
   className() {
@@ -615,6 +623,52 @@ export default class RolevayaSettingsPage extends ExtensionPage {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {Section(
+            'fas fa-tags',
+            'Теги',
+            'Слаги тегов, по которым расширение находит анкеты, ролевые посты и эпизоды',
+            <div className="RolevayaAdminPanel">
+              <div className="Form-group">
+                <label>Тег анкет персонажей</label>
+                <input
+                  className="FormControl RolevayaInput--medium"
+                  value={this.tagCharacters}
+                  oninput={(e: any) => {
+                    this.tagCharacters = e.target.value;
+                  }}
+                  onchange={() => this.setting('forumaker-rolevaya.tagCharacters')(this.tagCharacters.trim() || 'characters')}
+                  placeholder="characters"
+                />
+              </div>
+
+              <div className="Form-group">
+                <label>Тег ролевых тем</label>
+                <input
+                  className="FormControl RolevayaInput--medium"
+                  value={this.tagRole}
+                  oninput={(e: any) => {
+                    this.tagRole = e.target.value;
+                  }}
+                  onchange={() => this.setting('forumaker-rolevaya.tagRole')(this.tagRole.trim() || 'role')}
+                  placeholder="role"
+                />
+              </div>
+
+              <div className="Form-group">
+                <label>Тег эпизодов</label>
+                <input
+                  className="FormControl RolevayaInput--medium"
+                  value={this.tagEpisodes}
+                  oninput={(e: any) => {
+                    this.tagEpisodes = e.target.value;
+                  }}
+                  onchange={() => this.setting('forumaker-rolevaya.tagEpisodes')(this.tagEpisodes.trim() || 'episodes')}
+                  placeholder="episodes"
+                />
+              </div>
             </div>
           )}
 

@@ -5,29 +5,22 @@ namespace forumaker\Rolevaya\Service;
 use Carbon\CarbonImmutable;
 use Flarum\Settings\SettingsRepositoryInterface;
 use forumaker\Rolevaya\Model\CharacterSheet;
+use forumaker\Rolevaya\Repository\RoleplayScanRepository;
 use forumaker\Rolevaya\RoleplayTags;
 use forumaker\Rolevaya\Support\SettingsIdList;
-use Illuminate\Database\ConnectionInterface;
 
-/**
- * Raw ConnectionInterface access is kept here deliberately: this scans
- * discussion_tag/posts for candidate character-sheet posts in chunks and
- * needs the query builder's bulk read performance. It's isolated to this
- * service (not injected into a controller) — see Repository classes for the
- * read-only leaderboard endpoints, which follow the same "confine raw DB
- * access" principle.
- */
 class CharacterSheetBackfill
 {
     public function __construct(
-        protected ConnectionInterface $db,
+        protected RoleplayScanRepository $scanRepository,
         protected SettingsRepositoryInterface $settings,
-        protected CharacterSheetParser $parser
+        protected CharacterSheetParser $parser,
+        protected RoleplayTags $tags
     ) {}
 
     public function run(?int $limit = null, ?int $discussionIdMin = null, ?int $discussionIdMax = null): int
     {
-        $charactersTag = RoleplayTags::CHARACTERS;
+        $charactersTag = $this->tags->characters();
         $targetNumber  = (int) $this->settings->get('forumaker-rolevaya.charactersPostNumber', 3);
 
         $excludeDiscussionIds = SettingsIdList::read(
@@ -40,24 +33,14 @@ class CharacterSheetBackfill
 
         $now = CarbonImmutable::now()->toDateTimeString();
 
-        $q = $this->db->table('discussion_tag as dt')
-            ->join('tags as t', 't.id', '=', 'dt.tag_id')
-            ->where('t.slug', '=', $charactersTag)
-            ->whereNotIn('dt.discussion_id', $excludeDiscussionIds)
-            ->select('dt.discussion_id')
-            ->orderBy('dt.discussion_id', 'asc');
+        $discussionIds = $this->scanRepository->discussionIdsForTag(
+            $charactersTag,
+            $limit,
+            $discussionIdMin,
+            $discussionIdMax,
+            $excludeDiscussionIds
+        );
 
-        if ($discussionIdMin !== null) {
-            $q->where('dt.discussion_id', '>=', $discussionIdMin);
-        }
-        if ($discussionIdMax !== null) {
-            $q->where('dt.discussion_id', '<=', $discussionIdMax);
-        }
-        if ($limit !== null && $limit > 0) {
-            $q->limit($limit);
-        }
-
-        $discussionIds = $q->pluck('discussion_id')->all();
         if (!count($discussionIds)) {
             return 0;
         }
@@ -65,21 +48,7 @@ class CharacterSheetBackfill
         $updated = 0;
 
         foreach (array_chunk($discussionIds, 500) as $chunk) {
-            $posts = $this->db->table('posts')
-                ->whereIn('discussion_id', $chunk)
-                ->where('type', '=', 'comment')
-                ->whereNull('hidden_at')
-                ->whereBetween('number', [1, $scanLimit])
-                ->orderBy('discussion_id', 'asc')
-                ->orderByRaw('CASE WHEN number = ? THEN 0 ELSE 1 END', [$targetNumber])
-                ->orderBy('number', 'asc')
-                ->get([
-                    'id',
-                    'discussion_id',
-                    'user_id',
-                    'number',
-                    'content',
-                ]);
+            $posts = $this->scanRepository->characterSheetCandidatePosts($chunk, $scanLimit, $targetNumber);
 
             $byDiscussion = [];
             foreach ($posts as $p) {

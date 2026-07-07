@@ -4,40 +4,25 @@ namespace forumaker\Rolevaya\Service;
 
 use Carbon\CarbonImmutable;
 use forumaker\Rolevaya\Model\CompletedEpisode;
+use forumaker\Rolevaya\Repository\RoleplayScanRepository;
 use forumaker\Rolevaya\RoleplayTags;
-use Illuminate\Database\ConnectionInterface;
 
 class EpisodeCompletionBackfill
 {
     public function __construct(
-        protected ConnectionInterface $db,
+        protected RoleplayScanRepository $scanRepository,
         protected EpisodeCompletionParser $parser,
-        protected MentionedUserResolver $resolver
+        protected MentionedUserResolver $resolver,
+        protected RoleplayTags $tags
     ) {}
 
     public function run(?int $limit = null, ?int $discussionIdMin = null, ?int $discussionIdMax = null): int
     {
-        $episodesTag = RoleplayTags::EPISODES;
+        $episodesTag = $this->tags->episodes();
 
         $now = CarbonImmutable::now()->toDateTimeString();
 
-        $q = $this->db->table('discussion_tag as dt')
-            ->join('tags as t', 't.id', '=', 'dt.tag_id')
-            ->where('t.slug', '=', $episodesTag)
-            ->select('dt.discussion_id')
-            ->orderBy('dt.discussion_id', 'asc');
-
-        if ($discussionIdMin !== null) {
-            $q->where('dt.discussion_id', '>=', $discussionIdMin);
-        }
-        if ($discussionIdMax !== null) {
-            $q->where('dt.discussion_id', '<=', $discussionIdMax);
-        }
-        if ($limit !== null && $limit > 0) {
-            $q->limit($limit);
-        }
-
-        $discussionIds = $q->pluck('discussion_id')->all();
+        $discussionIds = $this->scanRepository->discussionIdsForTag($episodesTag, $limit, $discussionIdMin, $discussionIdMax);
         if (!count($discussionIds)) {
             return 0;
         }
@@ -46,17 +31,7 @@ class EpisodeCompletionBackfill
         $saved = 0;
 
         foreach (array_chunk($discussionIds, 200) as $chunk) {
-            $posts = $this->db->table('posts')
-                ->whereIn('discussion_id', $chunk)
-                ->where('type', '=', 'comment')
-                ->whereNull('hidden_at')
-                ->where(function ($q) {
-                    $q->where('content', 'like', '%[success%')
-                      ->orWhere('content', 'like', '%<SUCCESS%');
-                })
-                ->orderBy('discussion_id', 'asc')
-                ->orderBy('number', 'asc')
-                ->get(['id', 'discussion_id', 'content']);
+            $posts = $this->scanRepository->completionCandidatePosts($chunk);
 
             foreach ($posts as $post) {
                 $entries = $this->parser->parse((string) $post->content);

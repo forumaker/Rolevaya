@@ -3,7 +3,8 @@
 namespace forumaker\Rolevaya\Api\Controller;
 
 use Flarum\Http\RequestUtil;
-use forumaker\Rolevaya\Service\CharacterSheetBackfill;
+use forumaker\Rolevaya\Job\RecalculateCharacterSheetsJob;
+use Illuminate\Contracts\Queue\Queue;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -12,7 +13,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 class RecalculateCharactersController implements RequestHandlerInterface
 {
     public function __construct(
-        protected CharacterSheetBackfill $backfill
+        protected Queue $queue
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -20,11 +21,16 @@ class RecalculateCharactersController implements RequestHandlerInterface
         $actor = RequestUtil::getActor($request);
         $actor->assertAdmin();
 
-        $updated = $this->backfill->run();
+        // Scanning every character discussion can take a while on a large
+        // forum, so this is queued rather than run synchronously inside the
+        // HTTP request (see RecalculateCharacterSheetsJob). With the default
+        // "sync" queue driver this still runs immediately; with a database
+        // or Redis driver configured it's picked up by the queue worker.
+        $this->queue->push(new RecalculateCharacterSheetsJob());
 
         return new JsonResponse([
             'ok' => true,
-            'updated' => $updated,
-        ]);
+            'queued' => true,
+        ], 202);
     }
 }

@@ -5,6 +5,10 @@ use Illuminate\Database\Schema\Builder;
 
 return [
     'up' => function (Builder $schema) {
+        if ($schema->hasTable('completed_episodes')) {
+            return;
+        }
+
         $schema->create('completed_episodes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('user_id');

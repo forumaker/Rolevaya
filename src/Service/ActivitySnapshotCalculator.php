@@ -4,8 +4,8 @@ namespace forumaker\Rolevaya\Service;
 
 use Carbon\CarbonImmutable;
 use Flarum\Settings\SettingsRepositoryInterface;
+use forumaker\Rolevaya\Repository\ActivitySnapshotRepository;
 use forumaker\Rolevaya\RoleplayTags;
-use Illuminate\Database\ConnectionInterface;
 
 /**
  * Shared implementation for recalculating user_activity_snapshots, used by
@@ -22,8 +22,9 @@ class ActivitySnapshotCalculator
     private const MIN_POST_LENGTH = 400;
 
     public function __construct(
-        protected ConnectionInterface $db,
-        protected SettingsRepositoryInterface $settings
+        protected ActivitySnapshotRepository $repository,
+        protected SettingsRepositoryInterface $settings,
+        protected RoleplayTags $tags
     ) {}
 
     /**
@@ -31,7 +32,7 @@ class ActivitySnapshotCalculator
      */
     public function calculate(): array
     {
-        $roleTag = RoleplayTags::ROLE;
+        $roleTag = $this->tags->role();
 
         // 0 = all-time. Configurable via forumaker-rolevaya.activityPeriodDays
         // so the rolling-window filter below can actually be exercised.
@@ -43,32 +44,12 @@ class ActivitySnapshotCalculator
         $now = CarbonImmutable::now();
         $nowTs = $now->toDateTimeString();
 
-        $postsQ = $this->db->table('posts')
-            ->join('discussion_tag', 'discussion_tag.discussion_id', '=', 'posts.discussion_id')
-            ->join('tags', 'tags.id', '=', 'discussion_tag.tag_id')
-            ->where('tags.slug', '=', $roleTag)
-            ->where('posts.type', '=', 'comment')
-            ->whereNull('posts.hidden_at')
-            ->where('posts.number', '>', 1)
-            ->orderBy('posts.created_at', 'asc')
-            ->select([
-                'posts.id',
-                'posts.user_id',
-                'posts.created_at',
-                'posts.content',
-            ]);
-
-        if ($period > 0) {
-            $since = $now->subDays($period)->toDateTimeString();
-            $postsQ->where('posts.created_at', '>=', $since);
-        }
-
         $stats = [];
 
-        // cursor() hydrates one row at a time instead of materialising the
-        // whole result set (including the full post content column) in
-        // memory up front.
-        foreach ($postsQ->cursor() as $post) {
+        // cursor() (via the repository) hydrates one row at a time instead
+        // of materialising the whole result set (including the full post
+        // content column) in memory up front.
+        foreach ($this->repository->scanPosts($roleTag, $period, $now) as $post) {
             $userId = (int) ($post->user_id ?? 0);
             if ($userId <= 0) {
                 continue;
@@ -121,18 +102,7 @@ class ActivitySnapshotCalculator
             ];
         }
 
-        $this->db->transaction(function () use ($period, $roleTag, $payload) {
-            $this->db->table('user_activity_snapshots')
-                ->where('period_days', '=', $period)
-                ->where('scope_tag', '=', $roleTag)
-                ->delete();
-
-            if (count($payload)) {
-                foreach (array_chunk($payload, 1000) as $chunk) {
-                    $this->db->table('user_activity_snapshots')->insert($chunk);
-                }
-            }
-        });
+        $this->repository->replaceSnapshots($period, $roleTag, $payload);
 
         return [
             'rows' => count($payload),

@@ -101,11 +101,11 @@ return [
         )
         ->default(
             'forumaker-rolevaya.guardianDiscussionIds',
-            json_encode([52, 61, 55, 59])
+            json_encode([])
         )
         ->default(
             'forumaker-rolevaya.curatorUserIds',
-            json_encode([10, 27, 14])
+            json_encode([])
         )
         ->default(
             'forumaker-rolevaya.excludeCharacterDiscussionIds',
@@ -115,6 +115,18 @@ return [
             'forumaker-rolevaya.activityPeriodDays',
             '0'
         )
+        ->default(
+            'forumaker-rolevaya.tagCharacters',
+            RoleplayTags::DEFAULT_CHARACTERS
+        )
+        ->default(
+            'forumaker-rolevaya.tagRole',
+            RoleplayTags::DEFAULT_ROLE
+        )
+        ->default(
+            'forumaker-rolevaya.tagEpisodes',
+            RoleplayTags::DEFAULT_EPISODES
+        )
         ->serializeToForum(
             'forumaker-rolevaya.bestBonus',
             'forumaker-rolevaya.bestBonus'
@@ -122,15 +134,14 @@ return [
         ->serializeToForum(
             'forumaker-rolevaya.manualPerks',
             'forumaker-rolevaya.manualPerks'
-        )
-        ->serializeToForum(
-            'forumaker-rolevaya.guardianDiscussionIds',
-            'forumaker-rolevaya.guardianDiscussionIds'
-        )
-        ->serializeToForum(
-            'forumaker-rolevaya.curatorUserIds',
-            'forumaker-rolevaya.curatorUserIds'
         ),
+        // guardianDiscussionIds and curatorUserIds are deliberately NOT
+        // serialized to the forum frontend: they're internal moderation
+        // role assignments, not something anonymous visitors need to see.
+        // The server-side controllers already read them straight from
+        // settings, and the client-side exclude toggles only need to send
+        // exclude_guardians/exclude_curators — the actual ID lists never
+        // need to reach the browser.
 
     (new Extend\Console())
         ->command(RecalculateUserActivity::class)

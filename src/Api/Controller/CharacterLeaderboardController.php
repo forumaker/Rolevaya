@@ -16,7 +16,8 @@ class CharacterLeaderboardController implements RequestHandlerInterface
 {
     public function __construct(
         protected CharacterLeaderboardRepository $repository,
-        protected SettingsRepositoryInterface $settings
+        protected SettingsRepositoryInterface $settings,
+        protected RoleplayTags $tags
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -35,10 +36,14 @@ class CharacterLeaderboardController implements RequestHandlerInterface
         if ($limit > 200) $limit = 200;
 
         $excludeGuardians = (int) Arr::get($query, 'exclude_guardians', 0) === 1;
+        // Empty by default: these are forum-specific IDs an admin must
+        // configure themselves (see admin settings page). A non-empty
+        // hardcoded fallback would silently exclude arbitrary discussions
+        // on any other install.
         $guardianDiscussionIds = SettingsIdList::read(
             $this->settings,
             'forumaker-rolevaya.guardianDiscussionIds',
-            [52, 61, 55, 59]
+            []
         );
 
         $rows = $this->repository->topCharacters($sort, $limit, $excludeGuardians, $guardianDiscussionIds);
@@ -46,7 +51,7 @@ class CharacterLeaderboardController implements RequestHandlerInterface
         return new JsonResponse([
             'sort' => $sort,
             'limit' => $limit,
-            'tag' => RoleplayTags::CHARACTERS,
+            'tag' => $this->tags->characters(),
             'exclude_guardians' => $excludeGuardians,
             'data' => $rows,
         ]);
