@@ -40,8 +40,15 @@ class ParseArcCompletion
 
         $now = now();
 
+        // Mirrors ArcCompletionBackfill::resolveUserId(): a single
+        // completion post can name several participants, and
+        // MentionedUserResolver::resolve() can issue up to 3 sequential
+        // queries per unique mention. Caching within this one post's
+        // participants avoids re-resolving the same name/mention twice.
+        $userIdCache = [];
+
         foreach ($arcs as $arc) {
-            $userId = $this->resolver->resolve($arc);
+            $userId = $this->resolveUserId($arc, $userIdCache);
             if ($userId === null) {
                 continue;
             }
@@ -66,5 +73,16 @@ class ParseArcCompletion
                 ]
             );
         }
+    }
+
+    private function resolveUserId(array $mention, array &$cache): ?int
+    {
+        $key = ($mention['mention_type'] ?? null) . ':' . ($mention['mention_id'] ?? '') . ':' . mb_strtolower($mention['username']);
+
+        if (array_key_exists($key, $cache)) {
+            return $cache[$key];
+        }
+
+        return $cache[$key] = $this->resolver->resolve($mention);
     }
 }

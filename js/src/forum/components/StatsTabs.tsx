@@ -1,3 +1,4 @@
+import app from 'flarum/forum/app';
 import Component from 'flarum/common/Component';
 import CharactersTab from './stats/CharactersTab';
 import ActivityTab from './stats/ActivityTab';
@@ -88,15 +89,21 @@ export default class StatsTabs extends Component {
               Арена
             </button>
 
-            <button
-              className="Button RolevayaRefreshBtn"
-              onclick={() => void this.recalcActiveTab()}
-              disabled={updateDisabled}
-              title="Пересчитать и обновить данные"
-            >
-              <i className={'fa-solid fa-arrows-rotate' + (updateDisabled ? ' is-spinning' : '')} aria-hidden="true" />
-              <span>{this.activeUpdateLoading ? 'Пересчёт…' : 'Обновить'}</span>
-            </button>
+            {/* The backend already rejects these recalculate requests with a
+                403 for non-admins (see RequestUtil::getActor()->assertAdmin()
+                in the Recalculate* controllers) — this just avoids showing a
+                button to regular visitors that can only ever fail for them. */}
+            {app.session.user?.attribute('isAdmin') && (
+              <button
+                className="Button RolevayaRefreshBtn"
+                onclick={() => void this.recalcActiveTab()}
+                disabled={updateDisabled}
+                title="Пересчитать и обновить данные"
+              >
+                <i className={'fa-solid fa-arrows-rotate' + (updateDisabled ? ' is-spinning' : '')} aria-hidden="true" />
+                <span>{this.activeUpdateLoading ? 'Пересчёт…' : 'Обновить'}</span>
+              </button>
+            )}
           </div>
 
           {this.activeTabComponent?.renderControls()}

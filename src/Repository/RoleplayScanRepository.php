@@ -2,7 +2,6 @@
 
 namespace forumaker\Rolevaya\Repository;
 
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
 /**
@@ -11,12 +10,8 @@ use Illuminate\Support\Collection;
  * ConnectionInterface usage to the repository layer (per Flarum convention)
  * instead of injecting it into the service classes directly.
  */
-class RoleplayScanRepository
+class RoleplayScanRepository extends DatabaseRepository
 {
-    public function __construct(
-        protected ConnectionInterface $db
-    ) {}
-
     /**
      * @param int[] $excludeDiscussionIds
      * @return int[]

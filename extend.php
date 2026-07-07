@@ -127,6 +127,10 @@ return [
             'forumaker-rolevaya.tagEpisodes',
             RoleplayTags::DEFAULT_EPISODES
         )
+        ->default(
+            'forumaker-rolevaya.arenaTagSlug',
+            'arena'
+        )
         ->serializeToForum(
             'forumaker-rolevaya.bestBonus',
             'forumaker-rolevaya.bestBonus'
@@ -134,6 +138,26 @@ return [
         ->serializeToForum(
             'forumaker-rolevaya.manualPerks',
             'forumaker-rolevaya.manualPerks'
+        )
+        // Tag slugs are public taxonomy (not sensitive like the guardian/
+        // curator ID lists above), and the forum widget needs them to build
+        // links to the characters/arena tag pages without a hardcoded
+        // third-party domain baked into the compiled JS.
+        ->serializeToForum(
+            'forumaker-rolevaya.tagCharacters',
+            'forumaker-rolevaya.tagCharacters'
+        )
+        ->serializeToForum(
+            'forumaker-rolevaya.tagRole',
+            'forumaker-rolevaya.tagRole'
+        )
+        ->serializeToForum(
+            'forumaker-rolevaya.tagEpisodes',
+            'forumaker-rolevaya.tagEpisodes'
+        )
+        ->serializeToForum(
+            'forumaker-rolevaya.arenaTagSlug',
+            'forumaker-rolevaya.arenaTagSlug'
         ),
         // guardianDiscussionIds and curatorUserIds are deliberately NOT
         // serialized to the forum frontend: they're internal moderation

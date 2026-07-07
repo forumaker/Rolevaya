@@ -2,7 +2,6 @@
 
 namespace forumaker\Rolevaya\Repository;
 
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
 /**
@@ -12,12 +11,8 @@ use Illuminate\Support\Collection;
  * keeps working (returning an empty list) even if the Arena extension is
  * ever disabled, since it doesn't depend on Arena's PHP classes.
  */
-class ArenaLeaderboardRepository
+class ArenaLeaderboardRepository extends DatabaseRepository
 {
-    public function __construct(
-        protected ConnectionInterface $db
-    ) {}
-
     /**
      * @param int[] $excludeUserIds
      */

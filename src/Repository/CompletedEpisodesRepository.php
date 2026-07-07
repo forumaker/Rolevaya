@@ -2,15 +2,10 @@
 
 namespace forumaker\Rolevaya\Repository;
 
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
-class CompletedEpisodesRepository
+class CompletedEpisodesRepository extends DatabaseRepository
 {
-    public function __construct(
-        protected ConnectionInterface $db
-    ) {}
-
     public function forUser(int $userId, int $limit): Collection
     {
         return $this->db->table('completed_episodes as ce')

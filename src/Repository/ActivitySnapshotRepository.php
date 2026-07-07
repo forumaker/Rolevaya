@@ -3,7 +3,6 @@
 namespace forumaker\Rolevaya\Repository;
 
 use Carbon\CarbonImmutable;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\LazyCollection;
 
 /**
@@ -12,12 +11,8 @@ use Illuminate\Support\LazyCollection;
  * ActivitySnapshotCalculator doesn't need to depend on ConnectionInterface
  * directly.
  */
-class ActivitySnapshotRepository
+class ActivitySnapshotRepository extends DatabaseRepository
 {
-    public function __construct(
-        protected ConnectionInterface $db
-    ) {}
-
     /**
      * Streams matching posts via a cursor rather than loading them all into
      * memory at once (see ActivitySnapshotCalculator for why that matters).

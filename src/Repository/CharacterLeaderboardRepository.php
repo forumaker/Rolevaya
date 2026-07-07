@@ -14,12 +14,14 @@ use Illuminate\Support\Collection;
  * query builder rather than Eloquent scopes — but it's isolated here
  * instead of being injected directly into the controller.
  */
-class CharacterLeaderboardRepository
+class CharacterLeaderboardRepository extends DatabaseRepository
 {
     public function __construct(
-        protected ConnectionInterface $db,
+        ConnectionInterface $db,
         protected RoleplayTags $tags
-    ) {}
+    ) {
+        parent::__construct($db);
+    }
 
     /**
      * @param int[] $excludeDiscussionIds

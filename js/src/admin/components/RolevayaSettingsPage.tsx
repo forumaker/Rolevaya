@@ -109,6 +109,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
   tagCharacters = 'characters';
   tagRole = 'role';
   tagEpisodes = 'episodes';
+  arenaTagSlug = 'arena';
 
   oninit(vnode: any) {
     super.oninit(vnode);
@@ -129,6 +130,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     this.tagCharacters = this.setting('forumaker-rolevaya.tagCharacters')() || 'characters';
     this.tagRole = this.setting('forumaker-rolevaya.tagRole')() || 'role';
     this.tagEpisodes = this.setting('forumaker-rolevaya.tagEpisodes')() || 'episodes';
+    this.arenaTagSlug = this.setting('forumaker-rolevaya.arenaTagSlug')() || 'arena';
   }
 
   className() {
@@ -629,10 +631,10 @@ export default class RolevayaSettingsPage extends ExtensionPage {
           {Section(
             'fas fa-tags',
             'Теги',
-            'Слаги тегов, по которым расширение находит анкеты, ролевые посты и эпизоды',
+            'Откуда Зал Славы собирает статистику',
             <div className="RolevayaAdminPanel">
               <div className="Form-group">
-                <label>Тег анкет персонажей</label>
+                <label>Тег анкет</label>
                 <input
                   className="FormControl RolevayaInput--medium"
                   value={this.tagCharacters}
@@ -669,16 +671,30 @@ export default class RolevayaSettingsPage extends ExtensionPage {
                   placeholder="episodes"
                 />
               </div>
+
+              <div className="Form-group">
+                <label>Тег арены</label>
+                <input
+                  className="FormControl RolevayaInput--medium"
+                  value={this.arenaTagSlug}
+                  oninput={(e: any) => {
+                    this.arenaTagSlug = e.target.value;
+                  }}
+                  onchange={() => this.setting('forumaker-rolevaya.arenaTagSlug')(this.arenaTagSlug.trim() || 'arena')}
+                  placeholder="arena"
+                />
+                <p className="helpText">Используется для ссылки "На Арену" в виджете на главной.</p>
+              </div>
             </div>
           )}
 
           {Section(
             'fas fa-users-slash',
-            'Исключения и период активности',
-            'ID тем Хранителей и ID Кураторов, скрываемых по кнопкам "Без Хранителей"/"Без Кураторов", и окно расчёта активности',
+            'Игроки и ID',
+            'Фильтры Зала Славы',
             <div className="RolevayaAdminPanel">
               <div className="Form-group">
-                <label>ID тем Хранителей (через запятую)</label>
+                <label>ID Хранителей (через запятую)</label>
                 <input
                   className="FormControl"
                   value={this.guardianDiscussionIdsText}
@@ -691,7 +707,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
               </div>
 
               <div className="Form-group">
-                <label>ID пользователей-Кураторов (через запятую)</label>
+                <label>ID Кураторов (через запятую)</label>
                 <input
                   className="FormControl"
                   value={this.curatorUserIdsText}
@@ -704,7 +720,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
               </div>
 
               <div className="Form-group">
-                <label>Исключённые ID тем анкет (через запятую)</label>
+                <label>ID исключенных анкет (через запятую)</label>
                 <input
                   className="FormControl"
                   value={this.excludeCharacterDiscussionIdsText}
@@ -717,7 +733,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
               </div>
 
               <div className="Form-group">
-                <label>Окно расчёта активности, дней (0 = за всё время)</label>
+                <label>Дни активности. 0 — за всё время</label>
                 <input
                   className="FormControl RolevayaInput--medium"
                   type="number"

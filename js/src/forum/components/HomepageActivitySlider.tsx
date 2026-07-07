@@ -9,6 +9,7 @@ import User from 'flarum/common/models/User';
 // patches (`extend(Avatar.prototype, 'view', ...)` in its forum/index.tsx),
 // so using it here is what makes decorations show up in this widget too.
 import Avatar from 'flarum/common/components/Avatar';
+import { apiUrl, avatarUrl, ensureUsersLoaded, forumBaseUrl, userProfilePath } from './stats/statsShared';
 
 type RowIdentity = {
   user_id: number;
@@ -237,75 +238,12 @@ export default class HomepageActivitySlider extends Component {
     this.clampIndexFor(this.activeTab);
   }
 
-  private apiUrl(path: string) {
-    const base = app.forum.attribute('apiUrl') as string;
-    return base.replace(/\/$/, '') + path;
-  }
-
-  private forumBaseUrl() {
-    const base = (app.forum.attribute('baseUrl') as string) || '';
-    return base.replace(/\/$/, '');
-  }
-
   private playerName(row: RowIdentity) {
     return row.nickname || row.username || `#${row.user_id}`;
   }
 
   private formatNumber(value: number) {
     return new Intl.NumberFormat('ru-RU').format(Number(value) || 0);
-  }
-
-  private avatarUrl(row: RowIdentity) {
-    const raw = (row.avatar_url || '').trim();
-
-    if (raw) {
-      if (/^(data:|blob:)/i.test(raw)) return raw;
-      if (/^https?:\/\//i.test(raw)) return raw;
-
-      const base = this.forumBaseUrl();
-      if (raw.startsWith('/')) return `${base}${raw}`;
-      return `${base}/assets/avatars/${raw}`;
-    }
-
-    const user = app.store.getById('users', String(row.user_id)) as User | null;
-    const storeUrl = (user?.attribute('avatarUrl') as string | null) || null;
-
-    return storeUrl && String(storeUrl).trim() ? storeUrl : null;
-  }
-
-  private userProfilePath(userId: number, username?: string | null) {
-    const user = app.store.getById('users', String(userId)) as User | null;
-
-    if (user) {
-      try {
-        const routed = app.route.user(user);
-        if (typeof routed === 'string') return routed;
-      } catch {}
-
-      const profileUrl =
-        (user.attribute('profileUrl') as string | null) ||
-        (user.attribute('url') as string | null) ||
-        null;
-
-      if (profileUrl && String(profileUrl).trim()) {
-        return profileUrl;
-      }
-
-      const slug =
-        (user.attribute('slug') as string | null) ||
-        (user.attribute('username') as string | null) ||
-        username ||
-        null;
-
-      if (slug && String(slug).trim()) {
-        return `/u/${slug}`;
-      }
-    }
-
-    const fallbackSlug = (username || '').trim();
-    if (fallbackSlug) return `/u/${fallbackSlug}`;
-
-    return `/u/${userId}`;
   }
 
   private readCache<T = ActivityRow>(key: string): CachePayload<T> | null {
@@ -346,42 +284,6 @@ export default class HomepageActivitySlider extends Component {
     try {
       window.sessionStorage.removeItem(key);
     } catch {}
-  }
-
-  private async ensureUsersLoaded(rows: RowIdentity[]) {
-    // Skip anyone already hydrated in the store — avoids re-requesting the
-    // same user on every soft refresh, and avoids double-fetching users
-    // that appear on both the roleplay and arena rows.
-    const ids = Array.from(new Set(rows.map((r) => r.user_id).filter(Boolean))).filter(
-      (id) => !app.store.getById('users', String(id))
-    );
-    if (!ids.length) return;
-
-    // Flarum's default /api/users list endpoint has no built-in "id"
-    // gambit — filter:{id:...} silently falls back to whatever the
-    // *default* unfiltered/paginated listing happens to return, instead of
-    // erroring. So some of the requested users would get their model
-    // refreshed (if they landed on that default page) and others
-    // wouldn't, depending on ambient sort/pagination at request time —
-    // this is exactly what made avatar decorations flicker in and out
-    // between reloads (the decoration attribute only lands on whichever
-    // users the default listing happened to include). Fetching each user
-    // by their own singular resource endpoint (GET /api/users/:id) is the
-    // one lookup Flarum unambiguously supports for an arbitrary ID — the
-    // same one used when visiting their profile page.
-    //
-    // Firing all of them at once (Promise.all over the full list) turned
-    // out to be its own problem: a burst of up to 10 simultaneous requests
-    // competes with the browser's per-origin connection limit and the
-    // server's request-handling capacity, which is what caused the long
-    // delay / dropped decorations reported after the previous fix. Batching
-    // a handful at a time keeps the reliability fix without the flood.
-    const concurrency = 4;
-    for (let i = 0; i < ids.length; i += concurrency) {
-      const chunk = ids.slice(i, i + concurrency);
-      await Promise.all(chunk.map((id) => app.store.find('users', String(id)).catch(() => null)));
-      m.redraw();
-    }
   }
 
   private sameRows(a: ActivityRow[], b: ActivityRow[]) {
@@ -440,7 +342,7 @@ export default class HomepageActivitySlider extends Component {
     sharedState.inflight = app
       .request<any>({
         method: 'GET',
-        url: this.apiUrl('/rolevaya/activity'),
+        url: apiUrl('/rolevaya/activity'),
         params: {
           sort: 'posts_count',
           limit: 10,
@@ -462,7 +364,7 @@ export default class HomepageActivitySlider extends Component {
     arenaSharedState.inflight = app
       .request<any>({
         method: 'GET',
-        url: this.apiUrl('/rolevaya/arena-leaderboard'),
+        url: apiUrl('/rolevaya/arena-leaderboard'),
         params: {
           sort: 'wins',
           limit: 10,
@@ -496,7 +398,7 @@ export default class HomepageActivitySlider extends Component {
       sharedState.loadedOnce = true;
 
       this.writeCache(this.cacheKey, freshRows);
-      await this.ensureUsersLoaded(this.rows);
+      await ensureUsersLoaded(this.rows.map((r) => r.user_id));
       this.error = null;
     } catch (e: any) {
       if (!this.rows.length) {
@@ -529,7 +431,7 @@ export default class HomepageActivitySlider extends Component {
       arenaSharedState.loadedOnce = true;
 
       this.writeCache(this.arenaCacheKey, freshRows);
-      await this.ensureUsersLoaded(this.arenaRows);
+      await ensureUsersLoaded(this.arenaRows.map((r) => r.user_id));
       this.arenaError = null;
     } catch (e: any) {
       if (!this.arenaRows.length) {
@@ -562,7 +464,7 @@ export default class HomepageActivitySlider extends Component {
       // switching tabs) happened to trigger a real load elsewhere.
       // ensureUsersLoaded() already skips ids already present in the store,
       // so this is a no-op once everything is warm.
-      await this.ensureUsersLoaded(this.rows);
+      await ensureUsersLoaded(this.rows.map((r) => r.user_id));
       m.redraw();
 
       if (now - sharedState.ts >= this.softRefreshMs) {
@@ -584,7 +486,7 @@ export default class HomepageActivitySlider extends Component {
       sharedState.loadedOnce = true;
 
       m.redraw();
-      await this.ensureUsersLoaded(this.rows);
+      await ensureUsersLoaded(this.rows.map((r) => r.user_id));
       // Redraw again once the full User models (and therefore any avatar
       // decoration a plugin applies to them) have actually landed in the
       // store — the m.redraw() above only reflects the cached row data.
@@ -615,7 +517,7 @@ export default class HomepageActivitySlider extends Component {
 
       // Same fix as load(): fresh row data doesn't mean the User models are
       // hydrated in a just-booted store. No-ops once everyone's loaded.
-      await this.ensureUsersLoaded(this.arenaRows);
+      await ensureUsersLoaded(this.arenaRows.map((r) => r.user_id));
       m.redraw();
 
       if (now - arenaSharedState.ts >= this.softRefreshMs) {
@@ -637,7 +539,7 @@ export default class HomepageActivitySlider extends Component {
       arenaSharedState.loadedOnce = true;
 
       m.redraw();
-      await this.ensureUsersLoaded(this.arenaRows);
+      await ensureUsersLoaded(this.arenaRows.map((r) => r.user_id));
       m.redraw();
 
       if (now - cached.ts >= this.softRefreshMs) {
@@ -679,9 +581,33 @@ export default class HomepageActivitySlider extends Component {
     }
   }
 
+  /** This extension's own /top route (see extend.php), forum-relative so
+   *  it keeps working regardless of domain — this used to be a hardcoded
+   *  https://questpost.ru/top, which would have silently pointed every
+   *  other install of this extension back at this forum. */
+  private hallOfFameUrl() {
+    return `${forumBaseUrl()}/top`;
+  }
+
+  /** Tag page URL built from the configurable characters tag slug (admin
+   *  settings) rather than a hardcoded domain+slug. */
+  private charactersTagUrl() {
+    const slug = (app.forum.attribute('forumaker-rolevaya.tagCharacters') as string | undefined) || 'characters';
+    return `${forumBaseUrl()}/t/${slug}`;
+  }
+
+  /** Tag page URL for Arena's tag, built from the configurable arena tag
+   *  slug (admin settings) rather than a hardcoded domain+slug. Arena's tag
+   *  slug isn't Rolevaya's to own, so this is its own setting defaulting to
+   *  "arena" (the slug this forum actually uses). */
+  private arenaTagUrl() {
+    const slug = (app.forum.attribute('forumaker-rolevaya.arenaTagSlug') as string | undefined) || 'arena';
+    return `${forumBaseUrl()}/t/${slug}`;
+  }
+
   private renderHallOfFameLink(className: string) {
     return (
-      <a className={className} href="https://questpost.ru/top">
+      <a className={className} href={this.hallOfFameUrl()}>
         <i className="fas fa-building-columns RolevayaHomeWidget-hallLinkIcon" aria-hidden="true" />
         В Зал Славы
       </a>
@@ -691,7 +617,7 @@ export default class HomepageActivitySlider extends Component {
   /** Shown next to renderHallOfFameLink() on the Ролевая tab. */
   private renderCreateCharacterLink(className: string) {
     return (
-      <a className={className} href="https://questpost.ru/t/characters">
+      <a className={className} href={this.charactersTagUrl()}>
         <i className="fas fa-person-fairy RolevayaHomeWidget-hallLinkIcon" aria-hidden="true" />
         Посмотреть анкеты
       </a>
@@ -706,7 +632,7 @@ export default class HomepageActivitySlider extends Component {
    *  environment, with no cross-extension runtime involved. */
   private renderArenaTagLink(className: string) {
     return (
-      <a className={className} href="https://questpost.ru/t/arena">
+      <a className={className} href={this.arenaTagUrl()}>
         <i className="fas fa-swords RolevayaHomeWidget-hallLinkIcon" aria-hidden="true" />
         На Арену
       </a>
@@ -855,14 +781,14 @@ export default class HomepageActivitySlider extends Component {
                   >
                     {rows.map((row, index) => {
                       const player = this.playerName(row);
-                      const profile = this.userProfilePath(row.user_id, row.username);
+                      const profile = userProfilePath(row.user_id, row.username);
                       // The real User model is what the Avatar component (and
                       // therefore Point System's decoration patch on it)
                       // needs — ensureUsersLoaded() is what puts it in the
                       // store. Until that resolves, fall back to a plain
                       // <img>/placeholder built from the row's own data.
                       const userModel = app.store.getById('users', String(row.user_id)) as User | null;
-                      const fallbackAvatar = userModel ? null : this.avatarUrl(row);
+                      const fallbackAvatar = userModel ? null : avatarUrl(row);
 
                       return (
                         <div

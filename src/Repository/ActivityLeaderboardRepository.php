@@ -11,12 +11,14 @@ use Illuminate\Support\Collection;
  * leaderboard (user_activity_snapshots joined with users and per-user
  * completed arc/episode counts) to a single dedicated class.
  */
-class ActivityLeaderboardRepository
+class ActivityLeaderboardRepository extends DatabaseRepository
 {
     public function __construct(
-        protected ConnectionInterface $db,
+        ConnectionInterface $db,
         protected RoleplayTags $tags
-    ) {}
+    ) {
+        parent::__construct($db);
+    }
 
     /**
      * @param int[] $excludeUserIds
