@@ -79,8 +79,29 @@ type ManualPerkGroup = {
 export default class StatsTabs extends Component {
   activeTab: 'characters' | 'activity' | 'arena' = 'characters';
 
-  private readonly guardianDiscussionIds = new Set<number>([52, 61, 55, 59]);
-  private readonly curatorUserIds = new Set<number>([10, 27, 14]);
+  // Sourced from admin settings (forumaker-rolevaya.curatorUserIds),
+  // serialized to the forum frontend — this is the same source of truth the
+  // server-side filter uses, instead of a second hardcoded copy that could
+  // drift out of sync. (Guardian exclusion for characters is now applied
+  // entirely server-side — see loadCharacters — so no client-side set is
+  // needed for it.)
+  private readonly curatorUserIds = this.parseIdSetting('forumaker-rolevaya.curatorUserIds', [10, 27, 14]);
+
+  private parseIdSetting(key: string, fallback: number[]): Set<number> {
+    const raw = app.forum.attribute(key) as string | null;
+
+    if (!raw || !String(raw).trim()) {
+      return new Set(fallback);
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return new Set(fallback);
+      return new Set(parsed.map((id: any) => Number(id)).filter((id: number) => Number.isFinite(id)));
+    } catch {
+      return new Set(fallback);
+    }
+  }
 
   private readonly statIcons: Record<string, string> = {
     physiology:          'fa-solid fa-hand-fist',
@@ -383,6 +404,7 @@ export default class StatsTabs extends Component {
         params: {
           sort: this.charSort,
           limit: this.charLimit,
+          exclude_guardians: this.charExcludeGuardians ? 1 : 0,
           _ts: force ? this.cacheBust() : undefined,
         },
       });
@@ -623,9 +645,9 @@ export default class StatsTabs extends Component {
   }
 
   private renderCharactersBody() {
-    const displayedRows = this.charExcludeGuardians
-      ? this.charRows.filter((r) => !this.guardianDiscussionIds.has(Number(r.discussion_id)))
-      : this.charRows;
+    // exclude_guardians is now sent to the server (see loadCharacters), so
+    // this.charRows already reflects the filter — no need to re-filter here.
+    const displayedRows = this.charRows;
 
     return (
       <div className="RolevayaTabPanel">

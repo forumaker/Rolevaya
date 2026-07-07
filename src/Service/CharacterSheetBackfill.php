@@ -6,8 +6,17 @@ use Carbon\CarbonImmutable;
 use Flarum\Settings\SettingsRepositoryInterface;
 use forumaker\Rolevaya\Model\CharacterSheet;
 use forumaker\Rolevaya\RoleplayTags;
+use forumaker\Rolevaya\Support\SettingsIdList;
 use Illuminate\Database\ConnectionInterface;
 
+/**
+ * Raw ConnectionInterface access is kept here deliberately: this scans
+ * discussion_tag/posts for candidate character-sheet posts in chunks and
+ * needs the query builder's bulk read performance. It's isolated to this
+ * service (not injected into a controller) — see Repository classes for the
+ * read-only leaderboard endpoints, which follow the same "confine raw DB
+ * access" principle.
+ */
 class CharacterSheetBackfill
 {
     public function __construct(
@@ -21,7 +30,11 @@ class CharacterSheetBackfill
         $charactersTag = RoleplayTags::CHARACTERS;
         $targetNumber  = (int) $this->settings->get('forumaker-rolevaya.charactersPostNumber', 3);
 
-        $excludeDiscussionIds = [33];
+        $excludeDiscussionIds = SettingsIdList::read(
+            $this->settings,
+            'forumaker-rolevaya.excludeCharacterDiscussionIds',
+            [33]
+        );
 
         $scanLimit = 10;
 

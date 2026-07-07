@@ -101,6 +101,11 @@ export default class RolevayaSettingsPage extends ExtensionPage {
   discussionTitles: Record<number, string> = {};
   newDiscussionId = '';
 
+  guardianDiscussionIdsText = '';
+  curatorUserIdsText = '';
+  excludeCharacterDiscussionIdsText = '';
+  activityPeriodDaysText = '0';
+
   oninit(vnode: any) {
     super.oninit(vnode);
 
@@ -111,6 +116,11 @@ export default class RolevayaSettingsPage extends ExtensionPage {
       this.collapsedGroups[group.discussion_id] = true;
       this.fetchDiscussionTitle(group.discussion_id);
     });
+
+    this.guardianDiscussionIdsText = this.parseIdListSetting('forumaker-rolevaya.guardianDiscussionIds');
+    this.curatorUserIdsText = this.parseIdListSetting('forumaker-rolevaya.curatorUserIds');
+    this.excludeCharacterDiscussionIdsText = this.parseIdListSetting('forumaker-rolevaya.excludeCharacterDiscussionIds');
+    this.activityPeriodDaysText = String(parseInt(this.setting('forumaker-rolevaya.activityPeriodDays')() || '0', 10) || 0);
   }
 
   className() {
@@ -189,6 +199,35 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     } catch {
       return [];
     }
+  }
+
+  private parseIdListSetting(key: string): string {
+    const raw = this.setting(key)();
+    if (!raw) return '';
+
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return '';
+      return parsed.map((id: any) => Number(id)).filter((id: number) => Number.isFinite(id)).join(', ');
+    } catch {
+      return '';
+    }
+  }
+
+  private updateIdListSetting(key: string, text: string) {
+    const ids = text
+      .split(',')
+      .map((part) => parseInt(part.trim(), 10))
+      .filter((id) => Number.isFinite(id));
+
+    this.setting(key)(JSON.stringify(ids));
+    m.redraw();
+  }
+
+  private updateActivityPeriodDaysSetting(text: string) {
+    const days = Math.max(0, parseInt(text, 10) || 0);
+    this.setting('forumaker-rolevaya.activityPeriodDays')(String(days));
+    m.redraw();
   }
 
   private syncBestBonusSetting() {
@@ -576,6 +615,67 @@ export default class RolevayaSettingsPage extends ExtensionPage {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {Section(
+            'fas fa-users-slash',
+            'Исключения и период активности',
+            'ID тем Хранителей и ID Кураторов, скрываемых по кнопкам "Без Хранителей"/"Без Кураторов", и окно расчёта активности',
+            <div className="RolevayaAdminPanel">
+              <div className="Form-group">
+                <label>ID тем Хранителей (через запятую)</label>
+                <input
+                  className="FormControl"
+                  value={this.guardianDiscussionIdsText}
+                  oninput={(e: any) => {
+                    this.guardianDiscussionIdsText = e.target.value;
+                  }}
+                  onchange={() => this.updateIdListSetting('forumaker-rolevaya.guardianDiscussionIds', this.guardianDiscussionIdsText)}
+                  placeholder="52, 61, 55, 59"
+                />
+              </div>
+
+              <div className="Form-group">
+                <label>ID пользователей-Кураторов (через запятую)</label>
+                <input
+                  className="FormControl"
+                  value={this.curatorUserIdsText}
+                  oninput={(e: any) => {
+                    this.curatorUserIdsText = e.target.value;
+                  }}
+                  onchange={() => this.updateIdListSetting('forumaker-rolevaya.curatorUserIds', this.curatorUserIdsText)}
+                  placeholder="10, 27, 14"
+                />
+              </div>
+
+              <div className="Form-group">
+                <label>Исключённые ID тем анкет (через запятую)</label>
+                <input
+                  className="FormControl"
+                  value={this.excludeCharacterDiscussionIdsText}
+                  oninput={(e: any) => {
+                    this.excludeCharacterDiscussionIdsText = e.target.value;
+                  }}
+                  onchange={() => this.updateIdListSetting('forumaker-rolevaya.excludeCharacterDiscussionIds', this.excludeCharacterDiscussionIdsText)}
+                  placeholder="33"
+                />
+              </div>
+
+              <div className="Form-group">
+                <label>Окно расчёта активности, дней (0 = за всё время)</label>
+                <input
+                  className="FormControl RolevayaInput--medium"
+                  type="number"
+                  min="0"
+                  value={this.activityPeriodDaysText}
+                  oninput={(e: any) => {
+                    this.activityPeriodDaysText = e.target.value;
+                  }}
+                  onchange={() => this.updateActivityPeriodDaysSetting(this.activityPeriodDaysText)}
+                  placeholder="0"
+                />
+              </div>
             </div>
           )}
 

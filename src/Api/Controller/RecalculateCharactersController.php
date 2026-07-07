@@ -2,6 +2,7 @@
 
 namespace forumaker\Rolevaya\Api\Controller;
 
+use Flarum\Http\RequestUtil;
 use forumaker\Rolevaya\Service\CharacterSheetBackfill;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -16,6 +17,9 @@ class RecalculateCharactersController implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        $actor = RequestUtil::getActor($request);
+        $actor->assertAdmin();
+
         $updated = $this->backfill->run();
 
         return new JsonResponse([

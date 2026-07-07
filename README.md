@@ -8,11 +8,7 @@ This extension is built specifically for the **QuestPost** forum. It parses post
 
 It is **not intended to be installed on other forums** — dropping it into an unrelated Flarum install will not do anything useful out of the box.
 
-Feel free to read through the code for reference — Flarum 2.x extension structure, admin settings pages, cross-extension data reads, backfill console commands, just don't expect it to be a drop-in package.
-
-
-## 📦 Installation
-This extension lives in a local working copy and is deployed by copying it to the server and building there — there is no Packagist listing or public releases to install from
+Feel free to read through the code for reference — Flarum 2.x extension structure, admin settings pages, cross-extension data reads, backfill console commands, just don't expect it to be a drop-in package
 
 
 ## 🔗 Links

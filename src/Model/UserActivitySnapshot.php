@@ -2,11 +2,16 @@
 
 namespace forumaker\Rolevaya\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use Flarum\Database\AbstractModel;
 
-class UserActivitySnapshot extends Model
+class UserActivitySnapshot extends AbstractModel
 {
     protected $table = 'user_activity_snapshots';
+
+    // AbstractModel turns Eloquent's timestamp handling off by default; this
+    // table has created_at/updated_at columns that need to keep being set
+    // automatically.
+    public $timestamps = true;
 
     protected $fillable = [
         'user_id',

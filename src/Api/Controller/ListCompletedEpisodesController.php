@@ -2,7 +2,7 @@
 
 namespace forumaker\Rolevaya\Api\Controller;
 
-use Illuminate\Database\ConnectionInterface;
+use forumaker\Rolevaya\Repository\CompletedEpisodesRepository;
 use Illuminate\Support\Arr;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\ResponseInterface;
@@ -12,7 +12,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 class ListCompletedEpisodesController implements RequestHandlerInterface
 {
     public function __construct(
-        protected ConnectionInterface $db
+        protected CompletedEpisodesRepository $repository
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -31,22 +31,7 @@ class ListCompletedEpisodesController implements RequestHandlerInterface
         if ($limit < 1) $limit = 1;
         if ($limit > 200) $limit = 200;
 
-        $rows = $this->db->table('completed_episodes as ce')
-            ->join('discussions as d', 'd.id', '=', 'ce.discussion_id')
-            ->leftJoin('posts as p', 'p.id', '=', 'ce.source_post_id')
-            ->where('ce.user_id', '=', $userId)
-            ->orderByDesc('ce.parsed_at')
-            ->orderByDesc('ce.id')
-            ->limit($limit)
-            ->get([
-                'ce.id',
-                'ce.discussion_id',
-                'd.title as discussion_title',
-                'd.slug as discussion_slug',
-                'ce.source_post_id',
-                'p.number as source_post_number',
-                'ce.parsed_at',
-            ]);
+        $rows = $this->repository->forUser($userId, $limit);
 
         $res = new JsonResponse([
             'user_id' => $userId,

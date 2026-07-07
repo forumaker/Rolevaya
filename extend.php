@@ -16,7 +16,6 @@ use forumaker\Rolevaya\Console\RecalculateUserActivity;
 use forumaker\Rolevaya\Console\RecalculateCharacterSheets;
 use forumaker\Rolevaya\Console\RecalculateCompletedArcs;
 use forumaker\Rolevaya\Console\RecalculateCompletedEpisodes;
-use forumaker\Rolevaya\Console\DebugEpisodePost;
 use forumaker\Rolevaya\Listener\ParseCharacterSheet;
 use forumaker\Rolevaya\Listener\ParseArcCompletion;
 use forumaker\Rolevaya\Listener\ParseEpisodeCompletion;
@@ -100,6 +99,22 @@ return [
             'forumaker-rolevaya.manualPerks',
             json_encode([], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
         )
+        ->default(
+            'forumaker-rolevaya.guardianDiscussionIds',
+            json_encode([52, 61, 55, 59])
+        )
+        ->default(
+            'forumaker-rolevaya.curatorUserIds',
+            json_encode([10, 27, 14])
+        )
+        ->default(
+            'forumaker-rolevaya.excludeCharacterDiscussionIds',
+            json_encode([33])
+        )
+        ->default(
+            'forumaker-rolevaya.activityPeriodDays',
+            '0'
+        )
         ->serializeToForum(
             'forumaker-rolevaya.bestBonus',
             'forumaker-rolevaya.bestBonus'
@@ -107,12 +122,19 @@ return [
         ->serializeToForum(
             'forumaker-rolevaya.manualPerks',
             'forumaker-rolevaya.manualPerks'
+        )
+        ->serializeToForum(
+            'forumaker-rolevaya.guardianDiscussionIds',
+            'forumaker-rolevaya.guardianDiscussionIds'
+        )
+        ->serializeToForum(
+            'forumaker-rolevaya.curatorUserIds',
+            'forumaker-rolevaya.curatorUserIds'
         ),
 
     (new Extend\Console())
         ->command(RecalculateUserActivity::class)
         ->command(RecalculateCharacterSheets::class)
         ->command(RecalculateCompletedArcs::class)
-        ->command(RecalculateCompletedEpisodes::class)
-        ->command(DebugEpisodePost::class),
+        ->command(RecalculateCompletedEpisodes::class),
 ];

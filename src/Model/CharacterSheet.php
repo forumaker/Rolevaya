@@ -2,11 +2,16 @@
 
 namespace forumaker\Rolevaya\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use Flarum\Database\AbstractModel;
 
-class CharacterSheet extends Model
+class CharacterSheet extends AbstractModel
 {
     protected $table = 'character_sheets';
+
+    // AbstractModel turns Eloquent's timestamp handling off by default; this
+    // table has created_at/updated_at columns and relies on them being
+    // maintained automatically (e.g. via updateOrCreate()).
+    public $timestamps = true;
 
     protected $fillable = [
         'discussion_id',
