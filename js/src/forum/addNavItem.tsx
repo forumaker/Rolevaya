@@ -15,7 +15,9 @@ app.initializers.add('forumaker-rolevaya-nav', () => {
       <LinkButton icon="fas fa-building-columns" href={app.route('top')}>
         Зал Славы
       </LinkButton>,
-      -10
+      // One tick above Tags' own priority (-10) so it lands right before
+      // it — Tags' item was tied at -10 and, added later, sorted after it.
+      -9
     );
   });
 });
