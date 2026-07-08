@@ -683,7 +683,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
                   onchange={() => this.setting('forumaker-rolevaya.arenaTagSlug')(this.arenaTagSlug.trim() || 'arena')}
                   placeholder="arena"
                 />
-                <p className="helpText">Используется для ссылки "На Арену" в виджете на главной.</p>
+                <p className="helpText">Используется для ссылки «На Арену» в виджете на главной</p>
               </div>
             </div>
           )}
@@ -694,7 +694,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
             'Фильтры Зала Славы',
             <div className="RolevayaAdminPanel">
               <div className="Form-group">
-                <label>ID Хранителей (через запятую)</label>
+                <label>ID Хранителей</label>
                 <input
                   className="FormControl"
                   value={this.guardianDiscussionIdsText}
@@ -707,7 +707,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
               </div>
 
               <div className="Form-group">
-                <label>ID Кураторов (через запятую)</label>
+                <label>ID Кураторов</label>
                 <input
                   className="FormControl"
                   value={this.curatorUserIdsText}
@@ -720,7 +720,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
               </div>
 
               <div className="Form-group">
-                <label>ID исключенных анкет (через запятую)</label>
+                <label>ID исключенных анкет</label>
                 <input
                   className="FormControl"
                   value={this.excludeCharacterDiscussionIdsText}

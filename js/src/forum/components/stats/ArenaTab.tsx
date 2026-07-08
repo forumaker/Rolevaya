@@ -19,7 +19,6 @@ import {
  * be understood without reading the characters/activity tabs too.
  */
 export default class ArenaTab extends Component {
-  excludeCurators = false;
   sort: 'wins' | 'winrate' | 'losses' | 'draws' = 'wins';
   limit = 50;
 
@@ -49,7 +48,6 @@ export default class ArenaTab extends Component {
         params: {
           sort: this.sort,
           limit: this.limit,
-          exclude_curators: this.excludeCurators ? 1 : 0,
           _ts: force ? cacheBust() : undefined,
         },
       });
@@ -93,24 +91,11 @@ export default class ArenaTab extends Component {
             <option value="draws">Ничьи</option>
           </select>
         </label>
-
-        <button
-          type="button"
-          className={'Button RolevayaFilterBtn' + (this.excludeCurators ? ' active' : '')}
-          onclick={() => {
-            this.excludeCurators = !this.excludeCurators;
-            void this.load(true);
-          }}
-        >
-          Без Кураторов
-        </button>
       </div>
     );
   }
 
   view() {
-    // exclude_curators is sent to the server (see load), so this.rows
-    // already reflects the filter.
     const displayedRows = this.rows;
 
     return (
