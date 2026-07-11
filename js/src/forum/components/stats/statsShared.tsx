@@ -185,16 +185,34 @@ export async function ensureUsersLoaded(userIds: number[]) {
 
   inflightRun = (async () => {
     try {
-      // Flarum's /api/users list endpoint has no real "fetch exactly these
-      // IDs" filter and also requires the searchUsers permission (often
-      // denied to guests), so this used to mean one GET /api/users/{id}
-      // request per user — up to ~13 sequential round-trips (batched 4 at a
-      // time) to hydrate a full 50-row leaderboard. /rolevaya/users (see
-      // ListRolevayaUsersController) accepts a comma-separated id list and
-      // returns all of them as a single JSON:API response, so one request
-      // per (up to 200-id) batch is enough; pushPayload() then stores them
-      // exactly like app.store.find('users', id) would.
+      // Flarum's /api/users list endpoint has no real "id" filter gambit, so
+      // filter:{id:...} silently returns an ambient default listing instead
+      // of the requested users. Per-ID singular fetches (app.store.find) are
+      // what Flarum actually supports for arbitrary IDs, and — importantly —
+      // they go through Flarum's real serializer pipeline, so every other
+      // installed extension's attribute contributions (e.g. Point System's
+      // avatar-frame data) are present on the resulting User model.
       //
+      // A previous version of this function called a hand-rolled
+      // /rolevaya/users batch endpoint instead, to cut this down to one
+      // request per (up to 200-id) batch. That backend endpoint had two
+      // problems in production: it depended on Flarum 1.x API classes that
+      // no longer exist in Flarum 2.x (500 error), and once rewritten to
+      // avoid those, it could only emit the handful of attributes this
+      // extension itself knows about — losing every other extension's
+      // (e.g. Point System's) attribute contributions, which broke avatar
+      // frames and profile links. Round-tripping through Flarum's own
+      // /api/users/{id} endpoint per user is slower but is guaranteed to
+      // produce fully correct, fully decorated User models.
+      //
+      // Leaderboards here can list up to 50 rows, so firing 50 requests at
+      // once (Promise.all over the whole list) would overwhelm the browser's
+      // per-origin connection limit and the server. Fetching in small
+      // concurrent batches, with a redraw after each, keeps things reliable
+      // while showing frames progressively instead of all-or-nothing at the
+      // end.
+      const concurrency = 4;
+
       // Re-check pendingUserIds.size on every iteration (not just once up
       // front): a concurrent tab's ensureUsersLoaded() call can add more IDs
       // to the set while this loop is awaiting a batch, and those need to be
@@ -206,21 +224,11 @@ export async function ensureUsersLoaded(userIds: number[]) {
           ensuredUserIds.add(id);
         });
 
-        try {
-          const res = await app.request<any>({
-            method: 'GET',
-            url: apiUrl('/rolevaya/users'),
-            params: { ids: batch.join(',') },
-          });
-
-          app.store.pushPayload(res);
-        } catch {
-          // A failed batch just means those rows render without a hydrated
-          // User model this time around (falling back to the raw
-          // username/nickname already present on the leaderboard row).
+        for (let i = 0; i < batch.length; i += concurrency) {
+          const chunk = batch.slice(i, i + concurrency);
+          await Promise.all(chunk.map((id) => app.store.find('users', String(id)).catch(() => null)));
+          m.redraw();
         }
-
-        m.redraw();
       }
     } finally {
       inflightRun = null;
