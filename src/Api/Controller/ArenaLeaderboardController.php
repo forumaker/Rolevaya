@@ -17,6 +17,11 @@ use Psr\Http\Server\RequestHandlerInterface;
  * GetTopStatsController's convention in the Arena extension: wins / (wins +
  * losses), draws excluded from the denominator, rounded to the nearest
  * percent.
+ *
+ * Like CharacterLeaderboardController, this deliberately returns a plain
+ * JsonResponse envelope instead of a Flarum JSON:API document — not visible
+ * to app.store, not decoratable via Extend\ApiSerializer, and not a stable
+ * third-party contract.
  */
 class ArenaLeaderboardController implements RequestHandlerInterface
 {

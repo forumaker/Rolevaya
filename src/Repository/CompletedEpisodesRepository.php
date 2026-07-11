@@ -2,27 +2,18 @@
 
 namespace forumaker\Rolevaya\Repository;
 
+use forumaker\Rolevaya\Model\CompletedEpisode;
 use Illuminate\Support\Collection;
 
-class CompletedEpisodesRepository extends DatabaseRepository
+/**
+ * See CompletedArcsRepository for why this is a thin wrapper around an
+ * Eloquent query scope (CompletedEpisode::scopeForUser()) instead of a raw
+ * ConnectionInterface query.
+ */
+class CompletedEpisodesRepository
 {
     public function forUser(int $userId, int $limit): Collection
     {
-        return $this->db->table('completed_episodes as ce')
-            ->join('discussions as d', 'd.id', '=', 'ce.discussion_id')
-            ->leftJoin('posts as p', 'p.id', '=', 'ce.source_post_id')
-            ->where('ce.user_id', '=', $userId)
-            ->orderByDesc('ce.parsed_at')
-            ->orderByDesc('ce.id')
-            ->limit($limit)
-            ->get([
-                'ce.id',
-                'ce.discussion_id',
-                'd.title as discussion_title',
-                'd.slug as discussion_slug',
-                'ce.source_post_id',
-                'p.number as source_post_number',
-                'ce.parsed_at',
-            ]);
+        return CompletedEpisode::query()->forUser($userId, $limit)->get();
     }
 }

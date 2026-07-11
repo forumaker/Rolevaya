@@ -84,6 +84,10 @@ export function playerName(row: PlayerRow) {
   return row.nickname || row.username || `#${row.user_id}`;
 }
 
+export function formatNumber(value: number) {
+  return new Intl.NumberFormat('ru-RU').format(Number(value) || 0);
+}
+
 export function userProfilePath(userId: number, username?: string | null) {
   const user = app.store.getById('users', String(userId)) as User | null;
 
@@ -181,19 +185,16 @@ export async function ensureUsersLoaded(userIds: number[]) {
 
   inflightRun = (async () => {
     try {
-      // Flarum's /api/users list endpoint has no real "id" filter gambit, so
-      // filter:{id:...} silently returns an ambient default listing instead
-      // of the requested users. Per-ID singular fetches are what Flarum
-      // actually supports for arbitrary IDs.
+      // Flarum's /api/users list endpoint has no real "fetch exactly these
+      // IDs" filter and also requires the searchUsers permission (often
+      // denied to guests), so this used to mean one GET /api/users/{id}
+      // request per user — up to ~13 sequential round-trips (batched 4 at a
+      // time) to hydrate a full 50-row leaderboard. /rolevaya/users (see
+      // ListRolevayaUsersController) accepts a comma-separated id list and
+      // returns all of them as a single JSON:API response, so one request
+      // per (up to 200-id) batch is enough; pushPayload() then stores them
+      // exactly like app.store.find('users', id) would.
       //
-      // Leaderboards here can list up to 50 rows, so firing 50 requests at
-      // once (Promise.all over the whole list) would overwhelm the browser's
-      // per-origin connection limit and the server. Fetching in small
-      // concurrent batches, with a redraw after each, keeps things reliable
-      // while showing frames progressively instead of all-or-nothing at the
-      // end.
-      const concurrency = 4;
-
       // Re-check pendingUserIds.size on every iteration (not just once up
       // front): a concurrent tab's ensureUsersLoaded() call can add more IDs
       // to the set while this loop is awaiting a batch, and those need to be
@@ -205,11 +206,21 @@ export async function ensureUsersLoaded(userIds: number[]) {
           ensuredUserIds.add(id);
         });
 
-        for (let i = 0; i < batch.length; i += concurrency) {
-          const chunk = batch.slice(i, i + concurrency);
-          await Promise.all(chunk.map((id) => app.store.find('users', String(id)).catch(() => null)));
-          m.redraw();
+        try {
+          const res = await app.request<any>({
+            method: 'GET',
+            url: apiUrl('/rolevaya/users'),
+            params: { ids: batch.join(',') },
+          });
+
+          app.store.pushPayload(res);
+        } catch {
+          // A failed batch just means those rows render without a hydrated
+          // User model this time around (falling back to the raw
+          // username/nickname already present on the leaderboard row).
         }
+
+        m.redraw();
       }
     } finally {
       inflightRun = null;

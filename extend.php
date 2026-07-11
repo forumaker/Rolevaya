@@ -4,6 +4,7 @@ namespace forumaker\Rolevaya;
 
 use Flarum\Extend;
 use forumaker\Rolevaya\Api\Controller\CharacterLeaderboardController;
+use forumaker\Rolevaya\Api\Controller\ListRolevayaUsersController;
 use forumaker\Rolevaya\Api\Controller\UserActivityLeaderboardController;
 use forumaker\Rolevaya\Api\Controller\ArenaLeaderboardController;
 use forumaker\Rolevaya\Api\Controller\RecalculateCharactersController;
@@ -38,6 +39,11 @@ return [
             '/rolevaya/characters',
             'rolevaya.characters',
             CharacterLeaderboardController::class
+        )
+        ->get(
+            '/rolevaya/users',
+            'rolevaya.users',
+            ListRolevayaUsersController::class
         )
         ->get(
             '/rolevaya/activity',

@@ -23,7 +23,7 @@ import {
  */
 export default class ActivityTab extends Component {
   excludeCurators = false;
-  sort: 'posts_count' | 'completed_arcs_count' | 'completed_episodes_count' = 'posts_count';
+  sort: 'posts_count' | 'avg_chars' | 'completed_arcs_count' | 'completed_episodes_count' = 'posts_count';
   minPosts = 0;
   limit = 50;
 
@@ -124,6 +124,7 @@ export default class ActivityTab extends Component {
             }}
           >
             <option value="posts_count">Посты</option>
+            <option value="avg_chars">Средняя длина</option>
             <option value="completed_arcs_count">Завершённые арки</option>
             <option value="completed_episodes_count">Завершённые эпизоды</option>
           </select>

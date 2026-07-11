@@ -20,6 +20,16 @@ use Illuminate\Database\ConnectionInterface;
  * confined to this one base class: the "convention prohibits raw
  * ConnectionInterface" rule is honoured everywhere except this single,
  * intentional, documented spot.
+ *
+ * Extended by ActivityLeaderboardRepository, ActivitySnapshotRepository
+ * (its scanPosts() join; replaceSnapshots() itself goes through the
+ * UserActivitySnapshot model), ArenaLeaderboardRepository,
+ * CharacterLeaderboardRepository, and RoleplayScanRepository — all
+ * genuinely cross-table reads with no single natural anchor model.
+ * CompletedArcsRepository and CompletedEpisodesRepository do NOT extend
+ * this class: their completed_arcs/completed_episodes -> discussions/posts
+ * joins have a natural anchor (the CompletedArc/CompletedEpisode models),
+ * so they're expressed as Eloquent query scopes instead.
  */
 abstract class DatabaseRepository
 {

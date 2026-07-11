@@ -77,8 +77,11 @@ class ActivityLeaderboardRepository extends DatabaseRepository
                   ->orderByDesc('uas.posts_count');
                 break;
 
-            case 'stability':
             default:
+                // 'stability' was removed as a user-facing sort option (not
+                // a metric this forum surfaces), but stability_ratio still
+                // exists as a tie-breaker on 'posts_count' above and as a
+                // safety-net ordering here for any unrecognised $sort value.
                 $q->orderByDesc('uas.stability_ratio')
                   ->orderByDesc('uas.posts_count');
                 break;

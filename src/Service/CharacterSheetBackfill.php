@@ -60,6 +60,8 @@ class CharacterSheetBackfill
                 $byDiscussion[$did][] = $p;
             }
 
+            $rows = [];
+
             foreach ($byDiscussion as $did => $list) {
                 $picked = null;
                 $parsed = null;
@@ -77,17 +79,42 @@ class CharacterSheetBackfill
                     continue;
                 }
 
-                CharacterSheet::updateOrCreate(
-                    ['discussion_id' => $did],
-                    array_merge($parsed, [
-                        'user_id'            => (int) $picked->user_id,
-                        'source_post_id'     => (int) $picked->id,
-                        'source_post_number' => (int) $picked->number,
-                        'parsed_at'          => $now,
-                    ])
+                $rows[] = array_merge($parsed, [
+                    'discussion_id'      => $did,
+                    'user_id'            => (int) $picked->user_id,
+                    'source_post_id'     => (int) $picked->id,
+                    'source_post_number' => (int) $picked->number,
+                    'parsed_at'          => $now,
+                    'created_at'         => $now,
+                    'updated_at'         => $now,
+                ]);
+            }
+
+            if ($rows) {
+                // One upsert per chunk (against the discussion_id unique
+                // index) instead of one SELECT+INSERT/UPDATE per discussion
+                // via updateOrCreate() — collapses up to 500 queries into 1.
+                // created_at/updated_at are set explicitly because upsert()
+                // bypasses Eloquent's automatic timestamp handling.
+                CharacterSheet::query()->upsert(
+                    $rows,
+                    ['discussion_id'],
+                    [
+                        'user_id',
+                        'physiology',
+                        'dexterity',
+                        'magic',
+                        'charisma',
+                        'sum',
+                        'roleplay_experience',
+                        'source_post_id',
+                        'source_post_number',
+                        'parsed_at',
+                        'updated_at',
+                    ]
                 );
 
-                $updated++;
+                $updated += count($rows);
             }
         }
 

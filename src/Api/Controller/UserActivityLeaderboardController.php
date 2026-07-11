@@ -12,6 +12,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * Deliberately returns a plain Laminas JsonResponse with a custom envelope
+ * rather than a Flarum JSON:API document — see CharacterLeaderboardController
+ * for the rationale. Same trade-off applies: not visible to app.store, not
+ * decoratable via Extend\ApiSerializer, and the response shape is not a
+ * stable third-party contract.
+ */
 class UserActivityLeaderboardController implements RequestHandlerInterface
 {
     public function __construct(
@@ -29,9 +36,9 @@ class UserActivityLeaderboardController implements RequestHandlerInterface
             $period = 0;
         }
 
-        $sort = (string) Arr::get($query, 'sort', 'stability');
-        if (!in_array($sort, ['posts_count', 'avg_chars', 'stability', 'completed_arcs_count', 'completed_episodes_count'], true)) {
-            $sort = 'stability';
+        $sort = (string) Arr::get($query, 'sort', 'posts_count');
+        if (!in_array($sort, ['posts_count', 'avg_chars', 'completed_arcs_count', 'completed_episodes_count'], true)) {
+            $sort = 'posts_count';
         }
 
         $minPosts = (int) Arr::get($query, 'min_posts', 0);
