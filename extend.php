@@ -109,7 +109,7 @@ return [
         )
         ->default(
             'forumaker-rolevaya.excludeCharacterDiscussionIds',
-            json_encode([33])
+            json_encode([])
         )
         ->default(
             'forumaker-rolevaya.activityPeriodDays',

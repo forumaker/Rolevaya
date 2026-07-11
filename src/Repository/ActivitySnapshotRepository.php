@@ -3,6 +3,7 @@
 namespace forumaker\Rolevaya\Repository;
 
 use Carbon\CarbonImmutable;
+use forumaker\Rolevaya\Model\UserActivitySnapshot;
 use Illuminate\Support\LazyCollection;
 
 /**
@@ -46,19 +47,25 @@ class ActivitySnapshotRepository extends DatabaseRepository
      * Replaces all snapshot rows for the given period/scope in a single
      * transaction: delete then chunked bulk insert.
      *
+     * This is a single-table operation, so it goes through the
+     * UserActivitySnapshot AbstractModel rather than the raw query builder
+     * (unlike scanPosts() above, which genuinely needs a multi-table join
+     * that doesn't map onto any one model). $this->db is only used here to
+     * wrap both steps in one transaction.
+     *
      * @param array<int, array<string, mixed>> $payload
      */
     public function replaceSnapshots(int $period, string $roleTag, array $payload): void
     {
         $this->db->transaction(function () use ($period, $roleTag, $payload) {
-            $this->db->table('user_activity_snapshots')
+            UserActivitySnapshot::query()
                 ->where('period_days', '=', $period)
                 ->where('scope_tag', '=', $roleTag)
                 ->delete();
 
             if (count($payload)) {
                 foreach (array_chunk($payload, 1000) as $chunk) {
-                    $this->db->table('user_activity_snapshots')->insert($chunk);
+                    UserActivitySnapshot::query()->insert($chunk);
                 }
             }
         });

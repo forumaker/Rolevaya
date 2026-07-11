@@ -29,7 +29,13 @@ class ParseEpisodeCompletion
             return;
         }
 
-        if (!$discussion->tags()->where('slug', $this->tags->episodes())->exists()) {
+        // Accessing the `tags` relation property (rather than `tags()->where(...)->exists()`)
+        // loads and caches the collection on the Discussion model. ParseCharacterSheet and
+        // ParseArcCompletion listen on the same Post\Event\Saved and receive the same
+        // $post/$discussion instances, so whichever of the three listeners runs first pays
+        // for the query and the other two reuse the cached collection — one query instead
+        // of three per post save.
+        if (!$discussion->tags->contains('slug', $this->tags->episodes())) {
             return;
         }
 

@@ -155,37 +155,66 @@ export function rankClass(i: number) {
 // Shared across all three tabs so the same user isn't fetched twice just
 // because they show up on e.g. both the activity and arena leaderboards.
 const ensuredUserIds = new Set<number>();
-let ensureUsersInflight = false;
+
+// IDs that have been requested but not yet fetched. When StatsTabs mounts all
+// three tabs at once, each calls ensureUsersLoaded() as soon as its own data
+// loads; a plain boolean "inflight" guard used to make the second/third call
+// bail out immediately, dropping any user IDs unique to those tabs. Now every
+// call merges its IDs into this pending set, and whichever call is already
+// running drains the set in a loop until it's empty — so IDs added while a
+// fetch is in progress still get picked up before the run finishes, instead
+// of being silently skipped.
+const pendingUserIds = new Set<number>();
+let inflightRun: Promise<void> | null = null;
 
 export async function ensureUsersLoaded(userIds: number[]) {
-  const ids = Array.from(new Set(userIds))
-    .filter((id) => id && !ensuredUserIds.has(id) && !app.store.getById('users', String(id)))
-    .slice(0, 200);
+  const ids = Array.from(new Set(userIds)).filter((id) => id && !ensuredUserIds.has(id) && !app.store.getById('users', String(id)));
 
-  if (!ids.length || ensureUsersInflight) return;
+  ids.forEach((id) => pendingUserIds.add(id));
 
-  ensureUsersInflight = true;
-  ids.forEach((id) => ensuredUserIds.add(id));
+  if (!pendingUserIds.size) return;
 
-  try {
-    // Flarum's /api/users list endpoint has no real "id" filter gambit, so
-    // filter:{id:...} silently returns an ambient default listing instead
-    // of the requested users. Per-ID singular fetches are what Flarum
-    // actually supports for arbitrary IDs.
-    //
-    // Leaderboards here can list up to 50 rows, so firing 50 requests at
-    // once (Promise.all over the whole list) would overwhelm the browser's
-    // per-origin connection limit and the server. Fetching in small
-    // concurrent batches, with a redraw after each, keeps things reliable
-    // while showing frames progressively instead of all-or-nothing at the
-    // end.
-    const concurrency = 4;
-    for (let i = 0; i < ids.length; i += concurrency) {
-      const chunk = ids.slice(i, i + concurrency);
-      await Promise.all(chunk.map((id) => app.store.find('users', String(id)).catch(() => null)));
-      m.redraw();
-    }
-  } finally {
-    ensureUsersInflight = false;
+  if (inflightRun) {
+    await inflightRun;
+    return;
   }
+
+  inflightRun = (async () => {
+    try {
+      // Flarum's /api/users list endpoint has no real "id" filter gambit, so
+      // filter:{id:...} silently returns an ambient default listing instead
+      // of the requested users. Per-ID singular fetches are what Flarum
+      // actually supports for arbitrary IDs.
+      //
+      // Leaderboards here can list up to 50 rows, so firing 50 requests at
+      // once (Promise.all over the whole list) would overwhelm the browser's
+      // per-origin connection limit and the server. Fetching in small
+      // concurrent batches, with a redraw after each, keeps things reliable
+      // while showing frames progressively instead of all-or-nothing at the
+      // end.
+      const concurrency = 4;
+
+      // Re-check pendingUserIds.size on every iteration (not just once up
+      // front): a concurrent tab's ensureUsersLoaded() call can add more IDs
+      // to the set while this loop is awaiting a batch, and those need to be
+      // drained too before this run finishes.
+      while (pendingUserIds.size) {
+        const batch = Array.from(pendingUserIds).slice(0, 200);
+        batch.forEach((id) => {
+          pendingUserIds.delete(id);
+          ensuredUserIds.add(id);
+        });
+
+        for (let i = 0; i < batch.length; i += concurrency) {
+          const chunk = batch.slice(i, i + concurrency);
+          await Promise.all(chunk.map((id) => app.store.find('users', String(id)).catch(() => null)));
+          m.redraw();
+        }
+      }
+    } finally {
+      inflightRun = null;
+    }
+  })();
+
+  await inflightRun;
 }

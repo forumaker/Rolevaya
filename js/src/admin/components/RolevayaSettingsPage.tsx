@@ -728,8 +728,11 @@ export default class RolevayaSettingsPage extends ExtensionPage {
                     this.excludeCharacterDiscussionIdsText = e.target.value;
                   }}
                   onchange={() => this.updateIdListSetting('forumaker-rolevaya.excludeCharacterDiscussionIds', this.excludeCharacterDiscussionIdsText)}
-                  placeholder="33"
+                  placeholder="Например: 12, 45"
                 />
+                <p className="helpText">
+                  Укажите через запятую ID тем, которые нужно исключить из Зала Славы
+                </p>
               </div>
 
               <div className="Form-group">

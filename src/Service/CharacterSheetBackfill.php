@@ -23,10 +23,14 @@ class CharacterSheetBackfill
         $charactersTag = $this->tags->characters();
         $targetNumber  = (int) $this->settings->get('forumaker-rolevaya.charactersPostNumber', 3);
 
+        // Empty by default: discussion IDs to exclude are forum-specific and
+        // must be configured by the admin (see admin settings page). A
+        // non-empty hardcoded fallback would silently exclude arbitrary
+        // discussions on any other install.
         $excludeDiscussionIds = SettingsIdList::read(
             $this->settings,
             'forumaker-rolevaya.excludeCharacterDiscussionIds',
-            [33]
+            []
         );
 
         $scanLimit = 10;

@@ -11,17 +11,6 @@ export default class RolevayaPage extends Page {
     app.setTitle('Зал Славы');
   }
 
-  oncreate(vnode) {
-    super.oncreate(vnode);
-
-    app.setTitle('Зал Славы');
-  }
-
-  onupdate(vnode) {
-    super.onupdate(vnode);
-    app.setTitle('Зал Славы');
-  }
-
   title() {
     return 'Зал Славы';
   }

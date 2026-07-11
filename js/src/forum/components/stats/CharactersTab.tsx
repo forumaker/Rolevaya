@@ -61,8 +61,19 @@ export default class CharactersTab extends Component {
   error: string | null = null;
   rows: CharacterRow[] = [];
 
+  // Computed once instead of on every render: resolveCharacterPerks() used to call
+  // parseBestBonusSetting()/parseManualPerksMap() (each doing a JSON.parse) inside
+  // displayedRows.map(), so up to 200 rows meant hundreds of redundant parses per
+  // redraw. The underlying forum attributes are set once at boot and don't change
+  // without a full page reload (which re-runs oninit), so caching here is safe.
+  private cachedBestBonus: BestBonusSetting = { enabled: false };
+  private cachedManualPerksMap: Map<number, CardPerk[]> = new Map();
+
   oninit(vnode: any) {
     super.oninit(vnode);
+
+    this.cachedBestBonus = this.parseBestBonusSetting();
+    this.cachedManualPerksMap = this.parseManualPerksMap();
 
     void this.load(true);
   }
@@ -195,8 +206,8 @@ export default class CharactersTab extends Component {
   private resolveCharacterPerks(row: CharacterRow, displayedRows: CharacterRow[]): CardPerk[] {
     const result: CardPerk[] = [];
 
-    const bestBonus = this.parseBestBonusSetting();
-    const manualPerksMap = this.parseManualPerksMap();
+    const bestBonus = this.cachedBestBonus;
+    const manualPerksMap = this.cachedManualPerksMap;
 
     if (bestBonus.enabled !== false) {
       const maxExp = displayedRows.reduce(

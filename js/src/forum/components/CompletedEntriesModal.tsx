@@ -3,6 +3,7 @@ import Modal, { IInternalModalAttrs } from 'flarum/common/components/Modal';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import Link from 'flarum/common/components/Link';
 import type Mithril from 'mithril';
+import { apiUrl, forumBaseUrl } from './stats/statsShared';
 
 type EntryKind = 'arcs' | 'episodes';
 
@@ -64,18 +65,8 @@ export default class CompletedEntriesModal extends Modal<CompletedEntriesModalAt
     return KIND_CONFIG[this.attrs.kind].modalTitle;
   }
 
-  private apiUrl(path: string) {
-    const base = app.forum.attribute('apiUrl') as string;
-    return base.replace(/\/$/, '') + path;
-  }
-
-  private forumBaseUrl() {
-    const base = (app.forum.attribute('baseUrl') as string) || '';
-    return base.replace(/\/$/, '');
-  }
-
   private discussionUrl(row: EntryRow) {
-    const base = this.forumBaseUrl();
+    const base = forumBaseUrl();
     const slug = (row.discussion_slug || '').trim();
     const path = slug ? `/d/${row.discussion_id}-${slug}` : `/d/${row.discussion_id}`;
     const suffix = row.source_post_number ? `/${row.source_post_number}` : '';
@@ -111,7 +102,7 @@ export default class CompletedEntriesModal extends Modal<CompletedEntriesModalAt
     try {
       const res = await app.request<any>({
         method: 'GET',
-        url: this.apiUrl(KIND_CONFIG[this.attrs.kind].apiPath),
+        url: apiUrl(KIND_CONFIG[this.attrs.kind].apiPath),
         params: {
           user_id: this.attrs.userId,
         },
