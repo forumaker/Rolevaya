@@ -63,7 +63,7 @@ export default function FiltersSection(attrs: Attrs) {
 
       <div className="Form-group">
         <label>ID Кураторов</label>
-        {CuratorUserField({ ids: curatorUserIds, usernames: curatorUsernames, onAdd: onAddCurator, onRemove: onRemoveCurator })}
+        <CuratorUserField ids={curatorUserIds} usernames={curatorUsernames} onAdd={onAddCurator} onRemove={onRemoveCurator} />
         <p className="helpText">Найдите пользователя по имени и выберите его — можно добавить несколько.</p>
       </div>
 

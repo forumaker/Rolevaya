@@ -90,10 +90,11 @@ export default class StatsTabs extends Component {
             </button>
 
             {/* The backend already rejects these recalculate requests with a
-                403 for non-admins (see RequestUtil::getActor()->assertAdmin()
-                in the Recalculate* controllers) — this just avoids showing a
-                button to regular visitors that can only ever fail for them. */}
-            {app.session.user?.attribute('isAdmin') && (
+                403 for actors lacking the permission (see
+                assertPermission('forumaker-rolevaya.recalculate') in the
+                Recalculate* controllers) — this just avoids showing a
+                button to visitors that can only ever fail for them. */}
+            {app.forum.attribute('canRecalculateRolevaya') && (
               <button
                 className="Button RolevayaRefreshBtn"
                 onclick={() => void this.recalcActiveTab()}

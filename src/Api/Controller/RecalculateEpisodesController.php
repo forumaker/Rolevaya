@@ -19,7 +19,7 @@ class RecalculateEpisodesController implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $actor = RequestUtil::getActor($request);
-        $actor->assertAdmin();
+        $actor->assertPermission('forumaker-rolevaya.recalculate');
 
         // Scanning every episode discussion can take a while on a large
         // forum, so this is queued rather than run synchronously inside the

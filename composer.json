@@ -40,7 +40,8 @@
         "color": "#ffffff"
       },
       "optional-dependencies": [
-        "forumaker/arena"
+        "forumaker/arena",
+        "flarum/tags"
       ]
     }
   },

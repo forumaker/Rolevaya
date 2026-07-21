@@ -2,6 +2,7 @@
 
 namespace forumaker\Rolevaya;
 
+use Flarum\Api\Resource;
 use Flarum\Extend;
 use forumaker\Rolevaya\Api\Controller\CharacterLeaderboardController;
 use forumaker\Rolevaya\Api\Controller\UserActivityLeaderboardController;
@@ -32,6 +33,9 @@ return [
         ->route('/top', 'top'),
 
     new Extend\Locales(__DIR__ . '/resources/locale'),
+
+    (new Extend\ApiResource(Resource\ForumResource::class))
+        ->fields(Api\ForumResourceFields::class),
 
     (new Extend\Routes('api'))
         ->get(

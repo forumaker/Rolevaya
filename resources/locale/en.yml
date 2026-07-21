@@ -2,3 +2,6 @@ forumaker-rolevaya:
   forum:
     page:
       title: Rolevaya
+  admin:
+    permissions:
+      recalculate: Обновлять Зал Славы
