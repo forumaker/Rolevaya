@@ -99,10 +99,22 @@ export default class RolevayaSettingsPage extends ExtensionPage {
   private fetchDiscussionTitle(id: number): Promise<void> {
     if (this.discussionTitles[id]) return Promise.resolve();
 
-    return app.store
-      .find('discussions', id)
-      .then((discussion: any) => {
-        this.discussionTitles[id] = discussion.title?.() ?? String(id);
+    // Raw app.request() instead of app.store.find(): some other installed
+    // extension (an SEO extension, by the look of it) attaches a `seoMeta`
+    // relationship to the discussions resource by default. Flarum's admin
+    // app Store has no model registered for that type, so pushing the
+    // response through app.store.find()/pushPayload() throws "Pushing
+    // object of type `seoMeta` not allowed" on every load — harmless (the
+    // title still came through) but it floods the console. Reading
+    // .attributes.title straight off the raw response never touches the
+    // Store, so there's nothing for it to reject.
+    return app
+      .request<any>({
+        method: 'GET',
+        url: `${app.forum.attribute('apiUrl')}/discussions/${id}`,
+      })
+      .then((response: any) => {
+        this.discussionTitles[id] = response?.data?.attributes?.title ?? String(id);
         m.redraw();
       })
       .catch(() => {
