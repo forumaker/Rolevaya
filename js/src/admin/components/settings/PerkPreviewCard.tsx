@@ -1,11 +1,16 @@
 import { renderMarkdownInline } from '../../../common/markdown';
 
+type Attrs = { label: string; icon: string; color: string; description: string };
+
 /**
  * Live preview of a perk card (Бонус Лучшего or a manual perk), as it would
  * render on the forum. Shared by BestBonusSection and ManualPerkGroupCard.
+ *
+ * Mithril calls plain-function components with the vnode (props at
+ * vnode.attrs), not with attrs directly, so props are read from `attrs`.
  */
-export default function PerkPreviewCard(props: { label: string; icon: string; color: string; description: string }) {
-  const { label, icon, color, description } = props;
+export default function PerkPreviewCard({ attrs }: { attrs: Attrs }) {
+  const { label, icon, color, description } = attrs;
 
   return (
     <div className="RolevayaPreviewCard">

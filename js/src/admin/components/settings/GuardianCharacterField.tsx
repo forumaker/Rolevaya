@@ -18,8 +18,13 @@ type Attrs = {
  * several character sheets, only some of which should be excluded from the
  * leaderboard) — see the discussion with Arseny that settled this. Search
  * results therefore show the character/anketa name, not a username.
+ *
+ * Mithril calls plain-function components with the vnode (props at
+ * vnode.attrs), not with attrs directly, so props are read from `attrs`.
  */
-export default function GuardianCharacterField({ tagSlug, ids, titles, onAdd, onRemove }: Attrs) {
+export default function GuardianCharacterField({ attrs }: { attrs: Attrs }) {
+  const { tagSlug, ids, titles, onAdd, onRemove } = attrs;
+
   const search = (query: string): Promise<SearchSelectItem[]> => {
     const filterQ = tagSlug ? `${query} tag:${tagSlug}` : query;
 

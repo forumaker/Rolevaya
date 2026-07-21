@@ -17,8 +17,15 @@ type Attrs = {
   onPick: (tag: any) => void;
 };
 
-/** One "pick a single tag" field, used four times by TagsSection. */
-export default function TagPickerField({ label, help, slug, tag, loaded, onPick }: Attrs) {
+/**
+ * One "pick a single tag" field, used four times by TagsSection.
+ *
+ * Mithril calls plain-function components with the vnode (props at
+ * vnode.attrs), not with attrs directly, so props are read from `attrs`.
+ */
+export default function TagPickerField({ attrs }: { attrs: Attrs }) {
+  const { label, help, slug, tag, loaded, onPick } = attrs;
+
   return (
     <div className="Form-group">
       <label>{label}</label>

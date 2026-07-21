@@ -16,8 +16,17 @@ type Attrs = {
   onUpdate: (field: keyof BestBonusSetting, value: any) => void;
 };
 
-/** "Бонус Лучшего" collapsible card. Split out of RolevayaSettingsPage.content(). */
-export default function BestBonusSection({ bestBonus, collapsed, onToggleCollapse, onUpdate }: Attrs) {
+/**
+ * "Бонус Лучшего" collapsible card. Split out of RolevayaSettingsPage.content().
+ *
+ * Mithril calls plain-function components with the whole vnode as the
+ * argument (props live at vnode.attrs), not with attrs directly — unlike
+ * React. So the props are destructured from `attrs` here, not from the
+ * function parameter itself.
+ */
+export default function BestBonusSection({ attrs }: { attrs: Attrs }) {
+  const { bestBonus, collapsed, onToggleCollapse, onUpdate } = attrs;
+
   return (
     <div className={'RolevayaGroupCard' + (collapsed ? ' is-collapsed' : '')}>
       <div className="RolevayaGroupCard-header">

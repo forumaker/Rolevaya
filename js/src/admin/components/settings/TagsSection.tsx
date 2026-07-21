@@ -20,22 +20,27 @@ type Attrs = {
  * "Теги" section: which flarum/tags tag each part of the Зал Славы reads
  * from. Each field opens flarum/tags' own TagSelectionModal instead of a
  * free-text slug input, so the admin can't typo a slug that doesn't exist.
+ *
+ * Mithril calls plain-function components with the vnode (props at
+ * vnode.attrs), not with attrs directly, so props are read from `attrs`.
  */
-export default function TagsSection({
-  loaded,
-  tagCharacters,
-  tagCharactersTag,
-  tagRole,
-  tagRoleTag,
-  tagEpisodes,
-  tagEpisodesTag,
-  arenaTagSlug,
-  arenaTag,
-  onPickCharacters,
-  onPickRole,
-  onPickEpisodes,
-  onPickArena,
-}: Attrs) {
+export default function TagsSection({ attrs }: { attrs: Attrs }) {
+  const {
+    loaded,
+    tagCharacters,
+    tagCharactersTag,
+    tagRole,
+    tagRoleTag,
+    tagEpisodes,
+    tagEpisodesTag,
+    arenaTagSlug,
+    arenaTag,
+    onPickCharacters,
+    onPickRole,
+    onPickEpisodes,
+    onPickArena,
+  } = attrs;
+
   return (
     <div className="RolevayaAdminPanel">
       <TagPickerField label="Тег анкет" slug={tagCharacters} tag={tagCharactersTag} loaded={loaded} onPick={onPickCharacters} />

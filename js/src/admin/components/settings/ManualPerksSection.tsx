@@ -16,20 +16,26 @@ type Attrs = {
   onUpdatePerk: (groupIndex: number, perkIndex: number, field: keyof ManualPerk, value: any) => void;
 };
 
-/** "Дары" section: add a discussion, then attach one or more perk cards to it. */
-export default function ManualPerksSection({
-  groups,
-  collapsedGroups,
-  discussionTitles,
-  newDiscussionId,
-  onNewDiscussionIdChange,
-  onAddGroup,
-  onToggleGroup,
-  onAddPerk,
-  onRemoveGroup,
-  onRemovePerk,
-  onUpdatePerk,
-}: Attrs) {
+/**
+ * "Дары" section: add a discussion, then attach one or more perk cards to it.
+ *
+ * Mithril calls plain-function components with the vnode (props at
+ * vnode.attrs), not with attrs directly, so props are read from `attrs`.
+ */
+export default function ManualPerksSection({ attrs }: { attrs: Attrs }) {
+  const {
+    groups,
+    collapsedGroups,
+    discussionTitles,
+    newDiscussionId,
+    onNewDiscussionIdChange,
+    onAddGroup,
+    onToggleGroup,
+    onAddPerk,
+    onRemoveGroup,
+    onRemovePerk,
+    onUpdatePerk,
+  } = attrs;
   return (
     <div className="RolevayaAdminStack">
       <div className="RolevayaAdminToolbar">

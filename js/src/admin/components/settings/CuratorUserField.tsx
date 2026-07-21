@@ -11,8 +11,13 @@ type Attrs = {
 /**
  * "ID Кураторов" field: search users by display name (3+ letters) instead
  * of typing a raw user ID, using Flarum's own user search filter.
+ *
+ * Mithril calls plain-function components with the vnode (props at
+ * vnode.attrs), not with attrs directly, so props are read from `attrs`.
  */
-export default function CuratorUserField({ ids, usernames, onAdd, onRemove }: Attrs) {
+export default function CuratorUserField({ attrs }: { attrs: Attrs }) {
+  const { ids, usernames, onAdd, onRemove } = attrs;
+
   const search = (query: string): Promise<SearchSelectItem[]> => {
     return app.store
       .find<any>('users', { filter: { q: query }, page: { limit: 8 } })

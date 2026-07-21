@@ -22,24 +22,31 @@ type Attrs = {
   onActivityPeriodDaysCommit: () => void;
 };
 
-/** "Игроки и ID" section: leaderboard exclusion filters. */
-export default function FiltersSection({
-  tagCharacters,
-  guardianDiscussionIds,
-  guardianTitles,
-  onAddGuardian,
-  onRemoveGuardian,
-  curatorUserIds,
-  curatorUsernames,
-  onAddCurator,
-  onRemoveCurator,
-  excludeCharacterDiscussionIdsText,
-  onExcludeCharacterDiscussionIdsInput,
-  onExcludeCharacterDiscussionIdsCommit,
-  activityPeriodDaysText,
-  onActivityPeriodDaysInput,
-  onActivityPeriodDaysCommit,
-}: Attrs) {
+/**
+ * "Игроки и ID" section: leaderboard exclusion filters.
+ *
+ * Mithril calls plain-function components with the vnode (props at
+ * vnode.attrs), not with attrs directly, so props are read from `attrs`.
+ */
+export default function FiltersSection({ attrs }: { attrs: Attrs }) {
+  const {
+    tagCharacters,
+    guardianDiscussionIds,
+    guardianTitles,
+    onAddGuardian,
+    onRemoveGuardian,
+    curatorUserIds,
+    curatorUsernames,
+    onAddCurator,
+    onRemoveCurator,
+    excludeCharacterDiscussionIdsText,
+    onExcludeCharacterDiscussionIdsInput,
+    onExcludeCharacterDiscussionIdsCommit,
+    activityPeriodDaysText,
+    onActivityPeriodDaysInput,
+    onActivityPeriodDaysCommit,
+  } = attrs;
+
   return (
     <div className="RolevayaAdminPanel">
       <div className="Form-group">
