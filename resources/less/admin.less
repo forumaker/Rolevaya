@@ -1,38 +1,37 @@
 .RolevayaAdmin {
-
-  --mst-radius-lg: 10px;
-  --mst-radius-md: 8px;
-  --mst-radius-sm: 6px;
-  --mst-border: var(--control-border-color, #e5e7eb);
+  --mst-radius-lg: 16px;
+  --mst-radius-md: 12px;
+  --mst-radius-sm: 10px;
+  --mst-border: var(--control-bg, #e5e7eb);
   --mst-surface: var(--body-bg, #fff);
-  --mst-surface-soft: var(--control-bg, #f3f4f6);
-  --mst-text: var(--body-color, #111827);
+  --mst-surface-soft: color-mix(in srgb, var(--control-bg, #e5e7eb) 22%, transparent);
+  --mst-surface-softer: color-mix(in srgb, var(--control-bg, #e5e7eb) 14%, transparent);
+  --mst-text: var(--text-color, #111827);
   --mst-muted: var(--muted-color, #6b7280);
   --mst-primary: var(--primary-color, #6d28d9);
-  --mst-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --mst-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
   --mst-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --mst-transition: 150ms ease;
+  --mst-transition: 180ms ease;
 }
 
 .RolevayaAdmin-shell {
   max-width: 1200px;
-  margin: 24px auto 0;
+  margin: 28px auto 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .RolevayaAdminSection {
-  border: 1px solid var(--mst-border);
-  border-radius: var(--mst-radius-md);
-  background: var(--mst-surface);
-  box-shadow: var(--mst-shadow-sm);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .RolevayaAdminSection-header {
-  padding: 20px 20px 14px;
-
-  border-bottom: 2px solid var(--mst-surface-soft);
+  padding: 0 0 12px;
+  border-bottom: none;
   background: transparent;
 }
 
@@ -43,9 +42,9 @@
 }
 
 .RolevayaAdminSection-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--mst-radius-sm);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -56,8 +55,7 @@
 
 .RolevayaAdminSection-titleText h3 {
   margin: 0 0 6px;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 18px;
   line-height: 1.2;
   color: var(--mst-text);
 }
@@ -65,12 +63,11 @@
 .RolevayaAdminSection-titleText p {
   margin: 0;
   color: var(--mst-muted);
-  font-size: 12px;
   line-height: 1.55;
 }
 
 .RolevayaAdminSection-content {
-  padding: 20px;
+  padding: 0;
 }
 
 .RolevayaAdminGrid {
@@ -233,7 +230,7 @@
 .RolevayaPreviewCard-icon {
   width: 44px;
   height: 44px;
-  border-radius: var(--mst-radius-md);
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -603,8 +600,7 @@
 }
 
 .RolevayaAdminSection + .RolevayaAdminSection {
-
-  margin-top: 20px;
+  margin-top: 28px;
 }
 
 @media (max-width: 980px) {
