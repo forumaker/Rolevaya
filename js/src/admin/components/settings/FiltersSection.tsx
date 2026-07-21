@@ -1,7 +1,13 @@
+import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import GuardianCharacterField from './GuardianCharacterField';
 import CuratorUserField from './CuratorUserField';
 
 type Attrs = {
+  // True until every guardian discussion title / curator username has
+  // been fetched at least once — see RolevayaSettingsPage.oninit. Used to
+  // show a loading indicator instead of the pickers, so a page reload
+  // doesn't flash raw "#id…" chip labels before swapping in real titles.
+  loading: boolean;
   tagCharacters: string;
   guardianDiscussionIds: number[];
   guardianTitles: Record<number, string>;
@@ -30,6 +36,7 @@ type Attrs = {
  */
 export default function FiltersSection(attrs: Attrs) {
   const {
+    loading,
     tagCharacters,
     guardianDiscussionIds,
     guardianTitles,
@@ -51,20 +58,30 @@ export default function FiltersSection(attrs: Attrs) {
     <div className="RolevayaAdminPanel">
       <div className="Form-group">
         <label>ID Хранителей</label>
-        {GuardianCharacterField({
-          tagSlug: tagCharacters,
-          ids: guardianDiscussionIds,
-          titles: guardianTitles,
-          onAdd: onAddGuardian,
-          onRemove: onRemoveGuardian,
-        })}
-        <p className="helpText">Найдите анкету по названию и выберите её — можно добавить несколько.</p>
+        {loading ? (
+          <div className="RolevayaSearchSelect-loading">
+            <LoadingIndicator size="small" display="inline" />
+          </div>
+        ) : (
+          GuardianCharacterField({
+            tagSlug: tagCharacters,
+            ids: guardianDiscussionIds,
+            titles: guardianTitles,
+            onAdd: onAddGuardian,
+            onRemove: onRemoveGuardian,
+          })
+        )}
       </div>
 
       <div className="Form-group">
         <label>ID Кураторов</label>
-        <CuratorUserField ids={curatorUserIds} usernames={curatorUsernames} onAdd={onAddCurator} onRemove={onRemoveCurator} />
-        <p className="helpText">Найдите пользователя по имени и выберите его — можно добавить несколько.</p>
+        {loading ? (
+          <div className="RolevayaSearchSelect-loading">
+            <LoadingIndicator size="small" display="inline" />
+          </div>
+        ) : (
+          <CuratorUserField ids={curatorUserIds} usernames={curatorUsernames} onAdd={onAddCurator} onRemove={onRemoveCurator} />
+        )}
       </div>
 
       <div className="Form-group">

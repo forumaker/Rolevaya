@@ -404,10 +404,18 @@
 .RolevayaSearchSelect {
   // Wider than the generic 560px admin input cap (see
   // `.RolevayaAdmin .FormControl` above) so longer placeholders like
-  // "Введите отображаемое имя" don't get visually clipped the way they did
-  // when this shared the generic input width.
+  // "Введите отображаемое имя" don't get visually clipped. This single
+  // selector covers the input in BOTH the guardian field (rendered via
+  // SearchSelectField/AutocompleteDropdown) and the curator field
+  // (rendered via its own -inputWrap markup) so the two boxes are always
+  // exactly the same size, rather than diverging per-field.
   max-width: 680px;
   position: relative;
+}
+
+.RolevayaSearchSelect .FormControl {
+  max-width: 100%;
+  padding-right: 40px;
 }
 
 .RolevayaSearchSelect-chips {
@@ -421,9 +429,10 @@
   position: relative;
 }
 
-.RolevayaSearchSelect-inputWrap .FormControl {
-  max-width: 100%;
-  padding-right: 40px;
+.RolevayaSearchSelect-loading {
+  display: flex;
+  align-items: center;
+  padding: 11px 14px;
 }
 
 .RolevayaSearchSelect-spinner {

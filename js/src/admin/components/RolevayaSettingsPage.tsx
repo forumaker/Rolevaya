@@ -36,6 +36,13 @@ export default class RolevayaSettingsPage extends ExtensionPage {
   curatorUserIds: number[] = [];
   curatorUsernames: Record<number, string> = {};
 
+  // True until every guardian discussion title / curator username has been
+  // fetched at least once. FiltersSection uses this to show a loading
+  // indicator instead of the "#id…" fallback chip label, so the page
+  // doesn't flash raw IDs before swapping in the real titles/names on
+  // every reload.
+  filtersLoading = true;
+
   excludeCharacterDiscussionIdsText = '';
   activityPeriodDaysText = '0';
 
@@ -62,10 +69,15 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     });
 
     this.guardianDiscussionIds = this.parseIdArraySetting('forumaker-rolevaya.guardianDiscussionIds');
-    this.guardianDiscussionIds.forEach((id) => this.fetchDiscussionTitle(id));
-
     this.curatorUserIds = this.parseIdArraySetting('forumaker-rolevaya.curatorUserIds');
-    this.curatorUserIds.forEach((id) => this.fetchUsername(id));
+
+    Promise.all([
+      ...this.guardianDiscussionIds.map((id) => this.fetchDiscussionTitle(id)),
+      ...this.curatorUserIds.map((id) => this.fetchUsername(id)),
+    ]).then(() => {
+      this.filtersLoading = false;
+      m.redraw();
+    });
 
     this.excludeCharacterDiscussionIdsText = this.parseIdListSettingText('forumaker-rolevaya.excludeCharacterDiscussionIds');
     this.activityPeriodDaysText = String(parseInt(this.setting('forumaker-rolevaya.activityPeriodDays')() || '0', 10) || 0);
@@ -84,10 +96,10 @@ export default class RolevayaSettingsPage extends ExtensionPage {
 
   // --- lookups -------------------------------------------------------
 
-  private fetchDiscussionTitle(id: number) {
-    if (this.discussionTitles[id]) return;
+  private fetchDiscussionTitle(id: number): Promise<void> {
+    if (this.discussionTitles[id]) return Promise.resolve();
 
-    app.store
+    return app.store
       .find('discussions', id)
       .then((discussion: any) => {
         this.discussionTitles[id] = discussion.title?.() ?? String(id);
@@ -99,10 +111,10 @@ export default class RolevayaSettingsPage extends ExtensionPage {
       });
   }
 
-  private fetchUsername(id: number) {
-    if (this.curatorUsernames[id]) return;
+  private fetchUsername(id: number): Promise<void> {
+    if (this.curatorUsernames[id]) return Promise.resolve();
 
-    app.store
+    return app.store
       .find('users', String(id))
       .then((user: any) => {
         this.curatorUsernames[id] = user.username?.() ?? `#${id}`;
@@ -491,6 +503,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
       'Игроки и ID',
       'Фильтры Зала Славы',
       FiltersSection({
+        loading: this.filtersLoading,
         tagCharacters: this.tagCharacters,
         guardianDiscussionIds: this.guardianDiscussionIds,
         guardianTitles: this.discussionTitles,
