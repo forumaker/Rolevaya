@@ -23,7 +23,14 @@ function renderInline(text: string, keyPrefix: string): m.Children[] {
 
   while ((match = INLINE_PATTERN.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      nodes.push(text.slice(lastIndex, match.index));
+      // Mithril requires every vnode in a children array to either all have
+      // keys or all have none — mixing a raw (unkeyed) text string in with
+      // the keyed <code>/<strong>/<em> vnodes below throws "In fragments,
+      // vnodes must either all have keys or none have keys." on redraw
+      // (e.g. toggling a manual perk card open/closed). Wrapping plain text
+      // runs in a keyed <span> keeps every item in this array consistently
+      // keyed.
+      nodes.push(<span key={`${keyPrefix}-t${index++}`}>{text.slice(lastIndex, match.index)}</span>);
     }
 
     const key = `${keyPrefix}-${index++}`;
@@ -40,7 +47,7 @@ function renderInline(text: string, keyPrefix: string): m.Children[] {
   }
 
   if (lastIndex < text.length) {
-    nodes.push(text.slice(lastIndex));
+    nodes.push(<span key={`${keyPrefix}-t${index++}`}>{text.slice(lastIndex)}</span>);
   }
 
   return nodes;

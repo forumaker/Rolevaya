@@ -402,14 +402,16 @@
 }
 
 .RolevayaSearchSelect {
-  // Wider than the generic 560px admin input cap (see
-  // `.RolevayaAdmin .FormControl` above) so longer placeholders like
-  // "Введите отображаемое имя" don't get visually clipped. This single
-  // selector covers the input in BOTH the guardian field (rendered via
-  // SearchSelectField/AutocompleteDropdown) and the curator field
+  // Same 560px cap as every other text input on this page (see
+  // `.RolevayaAdmin .FormControl` above, and "ID исключенных анкет" below)
+  // so all the fields in this panel line up at one consistent width. This
+  // single selector covers the input in BOTH the guardian field (rendered
+  // via SearchSelectField/AutocompleteDropdown) and the curator field
   // (rendered via its own -inputWrap markup) so the two boxes are always
-  // exactly the same size, rather than diverging per-field.
-  max-width: 680px;
+  // exactly the same size, rather than diverging per-field. Now that the
+  // AutocompleteDropdown shrink-wrap bug below is fixed, 560px is plenty
+  // for even the longest placeholder ("Введите отображаемое имя").
+  max-width: 560px;
   width: 100%;
   position: relative;
 }
