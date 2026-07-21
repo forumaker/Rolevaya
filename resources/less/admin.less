@@ -410,11 +410,31 @@
   // (rendered via its own -inputWrap markup) so the two boxes are always
   // exactly the same size, rather than diverging per-field.
   max-width: 680px;
+  width: 100%;
   position: relative;
 }
 
+// flarum/common/components/AutocompleteDropdown (used by GuardianCharacterField
+// via SearchSelectField) wraps the <input> in its own `.AutocompleteDropdown`
+// div (see AutocompleteDropdown.tsx's view(): `<div className="AutocompleteDropdown">
+// {vnode.children}<ul className="Dropdown-menu Dropdown-suggestions">…`).
+// Core's own CSS for that wrapper shrink-wraps it, which was silently
+// capping the guardian input's width regardless of anything set on
+// `.RolevayaSearchSelect` or `.FormControl` — force it to stretch full width
+// here. `!important` is used because core's rule and this one are declared
+// with comparable specificity, and load order isn't something this
+// extension controls.
+.RolevayaSearchSelect .AutocompleteDropdown {
+  display: block !important;
+  width: 100% !important;
+}
+
+.RolevayaSearchSelect input.FormControl,
 .RolevayaSearchSelect .FormControl {
-  max-width: 100%;
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
   padding-right: 40px;
 }
 

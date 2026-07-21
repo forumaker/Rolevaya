@@ -1,12 +1,6 @@
 import app from 'flarum/admin/app';
 import Button from 'flarum/common/components/Button';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
-// Reusing flarum/tags' own tag picker (ext:vendor/extension/.../module import,
-// see https://docs.flarum.org/extend/frontend/#importing-from-extensions)
-// instead of hand-rolling a tag <select>/autocomplete. This extension
-// already hard-depends on flarum/tags for its taxonomy (see composer.json),
-// so the modal is guaranteed to be available.
-import TagSelectionModal from 'ext:flarum/tags/common/components/TagSelectionModal';
 
 type Attrs = {
   label: string;
@@ -37,7 +31,17 @@ export default function TagPickerField(attrs: Attrs) {
           className="Button RolevayaTagPickerButton"
           type="button"
           onclick={() =>
-            app.modal.show(TagSelectionModal, {
+            // TagSelectionModal is a code-split (lazy-loaded) module in
+            // flarum/tags — the exact same import path is Flarum's own
+            // documented example of this
+            // (https://docs.flarum.org/2.x/extend/code-splitting#async-modals).
+            // A static top-level `import TagSelectionModal from 'ext:...'`
+            // always resolves to undefined for split modules (that chunk
+            // was never requested), which is what caused the
+            // "reading 'prototype' of undefined" crash here. app.modal.show
+            // accepts a callback returning the dynamic import() promise and
+            // shows the modal once it resolves.
+            app.modal.show(() => import('ext:flarum/tags/common/components/TagSelectionModal'), {
               title: label,
               selectedTags: tag ? [tag] : [],
               allowResetting: false,
