@@ -1,90 +1,21 @@
 import app from 'flarum/admin/app';
 import ExtensionPage from 'flarum/admin/components/ExtensionPage';
-import Button from 'flarum/common/components/Button';
-import Switch from 'flarum/common/components/Switch';
-import type m from 'mithril';
 
-type BestBonusSetting = {
-  enabled: boolean;
-  label: string;
-  icon: string;
-  color: string;
-  description: string;
-};
+import { Section } from './settings/AdminSection';
+import BestBonusSection, { BestBonusSetting } from './settings/BestBonusSection';
+import ManualPerksSection from './settings/ManualPerksSection';
+import TagsSection from './settings/TagsSection';
+import FiltersSection from './settings/FiltersSection';
+import type { ManualPerk, ManualPerkGroup } from './settings/types';
 
-type ManualPerk = {
-  key: string;
-  label: string;
-  icon: string;
-  color: string;
-  description: string;
-};
+type TagKind = 'characters' | 'role' | 'episodes' | 'arena';
 
-type ManualPerkGroup = {
-  discussion_id: number;
-  perks: ManualPerk[];
-};
-
-function Section(iconClass: string, title: string, description: string, content: m.Children) {
-  return (
-    <section className="RolevayaAdminSection">
-      <div className="RolevayaAdminSection-header">
-        <div className="RolevayaAdminSection-titleWrap">
-          <div className="RolevayaAdminSection-icon">
-            <i className={iconClass} aria-hidden="true" />
-          </div>
-
-          <div className="RolevayaAdminSection-titleText">
-            <h3>{title}</h3>
-            <p>{description}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="RolevayaAdminSection-content">{content}</div>
-    </section>
-  );
-}
-
-function renderInlineMarkdown(text: string): m.Children[] {
-  const nodes: m.Children[] = [];
-  const pattern = /(\*\*([^*]+)\*\*|__([^_]+)__|\*([^*]+)\*|_([^_]+)_)/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = pattern.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      nodes.push(text.slice(lastIndex, match.index));
-    }
-
-    if (match[2] !== undefined || match[3] !== undefined) {
-      nodes.push(<strong>{match[2] ?? match[3]}</strong>);
-    } else if (match[4] !== undefined || match[5] !== undefined) {
-      nodes.push(<em>{match[4] ?? match[5]}</em>);
-    }
-
-    lastIndex = pattern.lastIndex;
-  }
-
-  if (lastIndex < text.length) {
-    nodes.push(text.slice(lastIndex));
-  }
-
-  return nodes;
-}
-
-function renderMarkdownPreview(text: string): m.Children[] {
-  return text.split('\n').reduce<m.Children[]>((acc, line, index) => {
-    if (index > 0) {
-      acc.push(<br />);
-    }
-
-    acc.push(...renderInlineMarkdown(line));
-
-    return acc;
-  }, []);
-}
-
+/**
+ * Admin settings page for the Rolevaya extension. Each section's markup
+ * lives in its own file under ./settings/ — this class is left holding the
+ * page's state and the mutation methods those sections call back into,
+ * which is what content() composes on every redraw.
+ */
 export default class RolevayaSettingsPage extends ExtensionPage {
   bestBonus: BestBonusSetting = {
     enabled: true,
@@ -101,8 +32,10 @@ export default class RolevayaSettingsPage extends ExtensionPage {
   discussionTitles: Record<number, string> = {};
   newDiscussionId = '';
 
-  guardianDiscussionIdsText = '';
-  curatorUserIdsText = '';
+  guardianDiscussionIds: number[] = [];
+  curatorUserIds: number[] = [];
+  curatorUsernames: Record<number, string> = {};
+
   excludeCharacterDiscussionIdsText = '';
   activityPeriodDaysText = '0';
 
@@ -110,6 +43,12 @@ export default class RolevayaSettingsPage extends ExtensionPage {
   tagRole = 'role';
   tagEpisodes = 'episodes';
   arenaTagSlug = 'arena';
+
+  tagCharactersTag: any = null;
+  tagRoleTag: any = null;
+  tagEpisodesTag: any = null;
+  arenaTagSlugTag: any = null;
+  tagsLoaded = false;
 
   oninit(vnode: any) {
     super.oninit(vnode);
@@ -122,62 +61,110 @@ export default class RolevayaSettingsPage extends ExtensionPage {
       this.fetchDiscussionTitle(group.discussion_id);
     });
 
-    this.guardianDiscussionIdsText = this.parseIdListSetting('forumaker-rolevaya.guardianDiscussionIds');
-    this.curatorUserIdsText = this.parseIdListSetting('forumaker-rolevaya.curatorUserIds');
-    this.excludeCharacterDiscussionIdsText = this.parseIdListSetting('forumaker-rolevaya.excludeCharacterDiscussionIds');
+    this.guardianDiscussionIds = this.parseIdArraySetting('forumaker-rolevaya.guardianDiscussionIds');
+    this.guardianDiscussionIds.forEach((id) => this.fetchDiscussionTitle(id));
+
+    this.curatorUserIds = this.parseIdArraySetting('forumaker-rolevaya.curatorUserIds');
+    this.curatorUserIds.forEach((id) => this.fetchUsername(id));
+
+    this.excludeCharacterDiscussionIdsText = this.parseIdListSettingText('forumaker-rolevaya.excludeCharacterDiscussionIds');
     this.activityPeriodDaysText = String(parseInt(this.setting('forumaker-rolevaya.activityPeriodDays')() || '0', 10) || 0);
 
     this.tagCharacters = this.setting('forumaker-rolevaya.tagCharacters')() || 'characters';
     this.tagRole = this.setting('forumaker-rolevaya.tagRole')() || 'role';
     this.tagEpisodes = this.setting('forumaker-rolevaya.tagEpisodes')() || 'episodes';
     this.arenaTagSlug = this.setting('forumaker-rolevaya.arenaTagSlug')() || 'arena';
+
+    this.loadTags();
   }
 
   className() {
     return 'RolevayaAdmin';
   }
 
+  // --- lookups -------------------------------------------------------
+
   private fetchDiscussionTitle(id: number) {
     if (this.discussionTitles[id]) return;
 
-    app.store.find('discussions', id).then((discussion: any) => {
-      this.discussionTitles[id] = discussion.title?.() ?? String(id);
-      m.redraw();
-    }).catch(() => {
-      this.discussionTitles[id] = String(id);
-      m.redraw();
-    });
+    app.store
+      .find('discussions', id)
+      .then((discussion: any) => {
+        this.discussionTitles[id] = discussion.title?.() ?? String(id);
+        m.redraw();
+      })
+      .catch(() => {
+        this.discussionTitles[id] = String(id);
+        m.redraw();
+      });
   }
 
-  private parseBestBonusSetting(raw: string | null | undefined): BestBonusSetting {
-    if (!raw) {
-      return {
-        enabled: true,
-        label: 'Бонус Лучшего',
-        icon: 'fa-duotone fa-regular fa-crown',
-        color: '#a855f7',
-        description: 'Один раз за арку получите доброе предсказание, которое точно сбудется в ближайшем будущем.',
-      };
+  private fetchUsername(id: number) {
+    if (this.curatorUsernames[id]) return;
+
+    app.store
+      .find('users', String(id))
+      .then((user: any) => {
+        this.curatorUsernames[id] = user.username?.() ?? `#${id}`;
+        m.redraw();
+      })
+      .catch(() => {
+        this.curatorUsernames[id] = `#${id}`;
+        m.redraw();
+      });
+  }
+
+  private loadTags() {
+    const tagList = (app as any).tagList;
+
+    if (!tagList) {
+      // flarum/tags isn't booted in this admin session for some reason —
+      // fall back to showing raw slugs rather than blocking the page.
+      this.tagsLoaded = true;
+      return;
     }
+
+    tagList
+      .load(['parent'])
+      .then((tags: any[]) => {
+        this.tagCharactersTag = tags.find((t) => t.slug() === this.tagCharacters) || null;
+        this.tagRoleTag = tags.find((t) => t.slug() === this.tagRole) || null;
+        this.tagEpisodesTag = tags.find((t) => t.slug() === this.tagEpisodes) || null;
+        this.arenaTagSlugTag = tags.find((t) => t.slug() === this.arenaTagSlug) || null;
+        this.tagsLoaded = true;
+        m.redraw();
+      })
+      .catch(() => {
+        this.tagsLoaded = true;
+        m.redraw();
+      });
+  }
+
+  // --- setting (de)serialization -------------------------------------
+
+  private parseBestBonusSetting(raw: string | null | undefined): BestBonusSetting {
+    const fallback: BestBonusSetting = {
+      enabled: true,
+      label: 'Бонус Лучшего',
+      icon: 'fa-duotone fa-regular fa-crown',
+      color: '#a855f7',
+      description: 'Один раз за арку получите доброе предсказание, которое точно сбудется в ближайшем будущем.',
+    };
+
+    if (!raw) return fallback;
 
     try {
       const parsed = JSON.parse(raw);
 
       return {
         enabled: parsed?.enabled !== false,
-        label: String(parsed?.label || 'Бонус Лучшего'),
-        icon: String(parsed?.icon || 'fa-duotone fa-regular fa-crown'),
-        color: String(parsed?.color || '#a855f7'),
+        label: String(parsed?.label || fallback.label),
+        icon: String(parsed?.icon || fallback.icon),
+        color: String(parsed?.color || fallback.color),
         description: String(parsed?.description || ''),
       };
     } catch {
-      return {
-        enabled: true,
-        label: 'Бонус Лучшего',
-        icon: 'fa-solid fa-stars',
-        color: '#a855f7',
-        description: 'Один раз за арку получите доброе предсказание, которое точно сбудется в ближайшем будущем.',
-      };
+      return fallback;
     }
   }
 
@@ -211,14 +198,18 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     }
   }
 
-  private parseIdListSetting(key: string): string {
+  /** Only still used for excludeCharacterDiscussionIds, which stays a free-text comma list. */
+  private parseIdListSettingText(key: string): string {
     const raw = this.setting(key)();
     if (!raw) return '';
 
     try {
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return '';
-      return parsed.map((id: any) => Number(id)).filter((id: number) => Number.isFinite(id)).join(', ');
+      return parsed
+        .map((id: any) => Number(id))
+        .filter((id: number) => Number.isFinite(id))
+        .join(', ');
     } catch {
       return '';
     }
@@ -234,28 +225,42 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     m.redraw();
   }
 
+  private parseIdArraySetting(key: string): number[] {
+    const raw = this.setting(key)();
+    if (!raw) return [];
+
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+
+      return Array.from(new Set(parsed.map((id: any) => Number(id)).filter((id: number) => Number.isFinite(id))));
+    } catch {
+      return [];
+    }
+  }
+
   private updateActivityPeriodDaysSetting(text: string) {
     const days = Math.max(0, parseInt(text, 10) || 0);
     this.setting('forumaker-rolevaya.activityPeriodDays')(String(days));
     m.redraw();
   }
 
+  // --- Бонус Лучшего ---------------------------------------------------
+
   private syncBestBonusSetting() {
     this.setting('forumaker-rolevaya.bestBonus')(JSON.stringify(this.bestBonus, null, 2));
   }
 
-  private syncManualPerksSetting() {
-    this.setting('forumaker-rolevaya.manualPerks')(JSON.stringify(this.manualPerkGroups, null, 2));
-  }
-
   private updateBestBonus(field: keyof BestBonusSetting, value: any) {
-    this.bestBonus = {
-      ...this.bestBonus,
-      [field]: value,
-    };
-
+    this.bestBonus = { ...this.bestBonus, [field]: value };
     this.syncBestBonusSetting();
     m.redraw();
+  }
+
+  // --- Дары (manual perks) --------------------------------------------
+
+  private syncManualPerksSetting() {
+    this.setting('forumaker-rolevaya.manualPerks')(JSON.stringify(this.manualPerkGroups, null, 2));
   }
 
   private sortGroups() {
@@ -269,7 +274,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
 
   private addDiscussionGroup() {
     const discussionId = Number(this.newDiscussionId);
-
     if (!discussionId) return;
 
     const exists = this.manualPerkGroups.some((group) => Number(group.discussion_id) === discussionId);
@@ -279,11 +283,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
       return;
     }
 
-    this.manualPerkGroups.push({
-      discussion_id: discussionId,
-      perks: [],
-    });
-
+    this.manualPerkGroups.push({ discussion_id: discussionId, perks: [] });
     this.collapsedGroups[discussionId] = true;
     this.fetchDiscussionTitle(discussionId);
     this.sortGroups();
@@ -325,11 +325,7 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     const group = this.manualPerkGroups[groupIndex];
     if (!group || !group.perks[perkIndex]) return;
 
-    group.perks[perkIndex] = {
-      ...group.perks[perkIndex],
-      [field]: value,
-    };
-
+    group.perks[perkIndex] = { ...group.perks[perkIndex], [field]: value };
     this.syncManualPerksSetting();
     m.redraw();
   }
@@ -349,414 +345,169 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     m.redraw();
   }
 
-  private renderPerkPreview(label: string, icon: string, color: string, description: string) {
-    return (
-      <div className="RolevayaPreviewCard">
-        <div className="RolevayaPreviewCard-top">
-          <div className="RolevayaPreviewCard-icon" style={{ color }}>
-            <i className={icon || 'fa-solid fa-star'} aria-hidden="true" />
-          </div>
+  // --- Теги (tag picker) ------------------------------------------------
 
-          <div className="RolevayaPreviewCard-meta">
-            <div className="RolevayaPreviewCard-title">{label || 'Название дара'}</div>
-            <div className="RolevayaPreviewCard-subtitle">Предпросмотр карточки</div>
-          </div>
-        </div>
+  private pickTag(kind: TagKind, tag: any) {
+    const slug = tag?.slug?.();
+    if (!slug) return;
 
-        <div className="RolevayaPreviewCard-body">
-          {description ? renderMarkdownPreview(description) : 'Описание дара появится здесь. Можно использовать Markdown.'}
-        </div>
-      </div>
-    );
+    if (kind === 'characters') {
+      this.tagCharacters = slug;
+      this.tagCharactersTag = tag;
+      this.setting('forumaker-rolevaya.tagCharacters')(slug);
+    } else if (kind === 'role') {
+      this.tagRole = slug;
+      this.tagRoleTag = tag;
+      this.setting('forumaker-rolevaya.tagRole')(slug);
+    } else if (kind === 'episodes') {
+      this.tagEpisodes = slug;
+      this.tagEpisodesTag = tag;
+      this.setting('forumaker-rolevaya.tagEpisodes')(slug);
+    } else if (kind === 'arena') {
+      this.arenaTagSlug = slug;
+      this.arenaTagSlugTag = tag;
+      this.setting('forumaker-rolevaya.arenaTagSlug')(slug);
+    }
+
+    m.redraw();
   }
+
+  // --- Игроки и ID (guardians / curators) ------------------------------
+
+  private addGuardianDiscussion(id: number, title: string) {
+    if (!id || this.guardianDiscussionIds.includes(id)) return;
+
+    this.guardianDiscussionIds = [...this.guardianDiscussionIds, id];
+    this.discussionTitles[id] = title;
+    this.setting('forumaker-rolevaya.guardianDiscussionIds')(JSON.stringify(this.guardianDiscussionIds));
+    m.redraw();
+  }
+
+  private removeGuardianDiscussion(id: number) {
+    this.guardianDiscussionIds = this.guardianDiscussionIds.filter((x) => x !== id);
+    this.setting('forumaker-rolevaya.guardianDiscussionIds')(JSON.stringify(this.guardianDiscussionIds));
+    m.redraw();
+  }
+
+  private addCurator(id: number, username: string) {
+    if (!id || this.curatorUserIds.includes(id)) return;
+
+    this.curatorUserIds = [...this.curatorUserIds, id];
+    this.curatorUsernames[id] = username;
+    this.setting('forumaker-rolevaya.curatorUserIds')(JSON.stringify(this.curatorUserIds));
+    m.redraw();
+  }
+
+  private removeCurator(id: number) {
+    this.curatorUserIds = this.curatorUserIds.filter((x) => x !== id);
+    this.setting('forumaker-rolevaya.curatorUserIds')(JSON.stringify(this.curatorUserIds));
+    m.redraw();
+  }
+
+  // --- render ------------------------------------------------------------
 
   content() {
     return (
       <div className="RolevayaAdmin">
         <div className="RolevayaAdmin-shell">
-          <div className={'RolevayaGroupCard' + (this.bestBonusCollapsed ? ' is-collapsed' : '')}>
-            <div className="RolevayaGroupCard-header">
-              <button
-                className="RolevayaGroupCard-toggle"
-                type="button"
-                aria-expanded={this.bestBonusCollapsed ? 'false' : 'true'}
-                onclick={() => { this.bestBonusCollapsed = !this.bestBonusCollapsed; m.redraw(); }}
-              >
-                <i
-                  className={this.bestBonusCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-down'}
-                  aria-hidden="true"
-                />
-                <span className="RolevayaGroupCard-titleWrap">
-                  <span className="RolevayaGroupCard-title">Бонус Лучшего</span>
-                  <span className="RolevayaGroupCard-subtitle">
-                    {this.bestBonus.enabled ? 'Включён' : 'Выключен'}
-                  </span>
-                </span>
-              </button>
-            </div>
-
-            {!this.bestBonusCollapsed && (
-              <div className="RolevayaAdminGrid RolevayaAdminGrid--bonus">
-                <div className="RolevayaAdminPanel">
-                  <div className="Form-group RolevayaToggleGroup">
-                    {Switch.component(
-                      {
-                        state: this.bestBonus.enabled,
-                        onchange: (value: boolean) => this.updateBestBonus('enabled', value),
-                      },
-                      'Показывать Бонус Лучшего в Зале Славы'
-                    )}
-                  </div>
-
-                  <div className="Form-group">
-                    <label>Название</label>
-                    <input
-                      className="FormControl"
-                      value={this.bestBonus.label}
-                      oninput={(e: any) => this.updateBestBonus('label', e.target.value)}
-                      placeholder="Бонус Лучшего"
-                    />
-                  </div>
-
-                  <div className="Form-group">
-                    <label>Иконка Font Awesome</label>
-                    <input
-                      className="FormControl RolevayaInput--medium"
-                      value={this.bestBonus.icon}
-                      oninput={(e: any) => this.updateBestBonus('icon', e.target.value)}
-                      placeholder="fa-duotone fa-regular fa-crown"
-                    />
-                  </div>
-
-                  <div className="Form-group">
-                    <label>Цвет иконки</label>
-                    <input
-                      className="FormControl RolevayaInput--colorText"
-                      value={this.bestBonus.color}
-                      oninput={(e: any) => this.updateBestBonus('color', e.target.value)}
-                      placeholder="#a855f7"
-                    />
-                  </div>
-
-                  <div className="Form-group">
-                    <label>Описание</label>
-                    <textarea
-                      className="FormControl"
-                      rows={5}
-                      value={this.bestBonus.description}
-                      oninput={(e: any) => this.updateBestBonus('description', e.target.value)}
-                      placeholder="Описание дара"
-                    />
-                  </div>
-                </div>
-
-                <div className="RolevayaAdminAside">
-                  {this.renderPerkPreview(
-                    this.bestBonus.label,
-                    this.bestBonus.icon,
-                    this.bestBonus.color,
-                    this.bestBonus.description
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {Section(
-            'fas fa-wand-sparkles',
-            'Дары',
-            'Ручные перки для конкретных анкет',
-            <div className="RolevayaAdminStack">
-              <div className="RolevayaAdminToolbar">
-                <div className="RolevayaAdminToolbar-main">
-                  <div className="Form-group RolevayaAdminToolbar-field">
-                    <label>ID темы анкеты</label>
-
-                    <div className="RolevayaInlineRow">
-                      <input
-                        className="FormControl RolevayaInput--medium"
-                        type="number"
-                        min="1"
-                        value={this.newDiscussionId}
-                        oninput={(e: any) => {
-                          this.newDiscussionId = e.target.value;
-                        }}
-                        placeholder="Например: 123"
-                      />
-
-                      <Button className="Button Button--primary" type="button" onclick={() => this.addDiscussionGroup()}>
-                        Добавить карточку
-                      </Button>
-                    </div>
-
-                    <p className="helpText">
-                      Число из ссылки на анкету
-                      <br />
-                      Пример: <code>/d/123-imya-personazha</code> → ID темы = <strong>123</strong>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {this.manualPerkGroups.length === 0 ? (
-                <div className="RolevayaEmptyState">
-                  <div className="RolevayaEmptyState-icon">
-                    <i className="fas fa-sparkles" aria-hidden="true" />
-                  </div>
-                  <div className="RolevayaEmptyState-title">Пока нет ни одной карточки</div>
-                  <div className="RolevayaEmptyState-text">Добавь ID темы, чтобы создать первую карточку с дарами.</div>
-                </div>
-              ) : null}
-
-              {this.manualPerkGroups.map((group, groupIndex) => {
-                const isCollapsed = this.collapsedGroups[group.discussion_id] !== false;
-                const title = this.discussionTitles[group.discussion_id] ?? `#${group.discussion_id}…`;
-
-                return (
-                  <div
-                    className={'RolevayaGroupCard' + (isCollapsed ? ' is-collapsed' : '')}
-                    key={`group-${group.discussion_id}`}
-                  >
-                    <div className="RolevayaGroupCard-header">
-                      <button
-                        className="RolevayaGroupCard-toggle"
-                        type="button"
-                        aria-expanded={isCollapsed ? 'false' : 'true'}
-                        onclick={() => this.toggleGroup(group.discussion_id)}
-                      >
-                        <i
-                          className={isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-down'}
-                          aria-hidden="true"
-                        />
-                        <span className="RolevayaGroupCard-titleWrap">
-                          <span className="RolevayaGroupCard-title">{title}</span>
-                          <span className="RolevayaGroupCard-subtitle">
-                            {group.perks.length === 0 ? 'Даров пока нет' : `Даров: ${group.perks.length}`}
-                          </span>
-                        </span>
-                      </button>
-
-                      <div className="RolevayaGroupCard-actions">
-                        <Button className="Button Button--primary" type="button" onclick={() => this.addPerkToGroup(groupIndex)}>
-                          Добавить дар
-                        </Button>
-
-                        <Button className="Button Button--danger" type="button" onclick={() => this.removeDiscussionGroup(groupIndex)}>
-                          Удалить карточку
-                        </Button>
-                      </div>
-                    </div>
-
-                    {!isCollapsed && (
-                      <>
-                        {group.perks.length === 0 ? <p className="helpText">У этой карточки пока нет даров.</p> : null}
-
-                        <div className="RolevayaPerksList">
-                          {group.perks.map((perk, perkIndex) => (
-                            <div className="RolevayaPerkCard" key={`${perk.key}-${perkIndex}`}>
-                              <div className="RolevayaPerkCard-header">
-                                <div className="RolevayaPerkCard-heading">
-                                  <span className="RolevayaPerkCard-badge">Дар #{perkIndex + 1}</span>
-                                  <strong>{perk.label || 'Без названия'}</strong>
-                                </div>
-
-                                <Button
-                                  className="Button Button--danger"
-                                  type="button"
-                                  onclick={() => this.removeManualPerk(groupIndex, perkIndex)}
-                                >
-                                  Удалить дар
-                                </Button>
-                              </div>
-
-                              <div className="RolevayaAdminGrid RolevayaAdminGrid--perk">
-                                <div className="RolevayaAdminPanel">
-                                  <div className="Form-group">
-                                    <label>Название</label>
-                                    <input
-                                      className="FormControl"
-                                      value={perk.label}
-                                      oninput={(e: any) => this.updateManualPerk(groupIndex, perkIndex, 'label', e.target.value)}
-                                      placeholder="Название дара"
-                                    />
-                                  </div>
-
-                                  <div className="Form-group">
-                                    <label>Иконка Font Awesome</label>
-                                    <input
-                                      className="FormControl RolevayaInput--medium"
-                                      value={perk.icon}
-                                      oninput={(e: any) => this.updateManualPerk(groupIndex, perkIndex, 'icon', e.target.value)}
-                                      placeholder="fa-solid fa-spider"
-                                    />
-                                  </div>
-
-                                  <div className="Form-group">
-                                    <label>Цвет иконки</label>
-                                    <input
-                                      className="FormControl RolevayaInput--colorText"
-                                      value={perk.color}
-                                      oninput={(e: any) => this.updateManualPerk(groupIndex, perkIndex, 'color', e.target.value)}
-                                      placeholder="#a855f7"
-                                    />
-                                  </div>
-
-                                  <div className="Form-group">
-                                    <label>Описание</label>
-                                    <textarea
-                                      className="FormControl"
-                                      rows={5}
-                                      value={perk.description}
-                                      oninput={(e: any) => this.updateManualPerk(groupIndex, perkIndex, 'description', e.target.value)}
-                                      placeholder="Описание дара"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className="RolevayaAdminAside">
-                                  {this.renderPerkPreview(perk.label, perk.icon, perk.color, perk.description)}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {Section(
-            'fas fa-tags',
-            'Теги',
-            'Откуда Зал Славы собирает статистику',
-            <div className="RolevayaAdminPanel">
-              <div className="Form-group">
-                <label>Тег анкет</label>
-                <input
-                  className="FormControl RolevayaInput--medium"
-                  value={this.tagCharacters}
-                  oninput={(e: any) => {
-                    this.tagCharacters = e.target.value;
-                  }}
-                  onchange={() => this.setting('forumaker-rolevaya.tagCharacters')(this.tagCharacters.trim() || 'characters')}
-                  placeholder="characters"
-                />
-              </div>
-
-              <div className="Form-group">
-                <label>Тег ролевых тем</label>
-                <input
-                  className="FormControl RolevayaInput--medium"
-                  value={this.tagRole}
-                  oninput={(e: any) => {
-                    this.tagRole = e.target.value;
-                  }}
-                  onchange={() => this.setting('forumaker-rolevaya.tagRole')(this.tagRole.trim() || 'role')}
-                  placeholder="role"
-                />
-              </div>
-
-              <div className="Form-group">
-                <label>Тег эпизодов</label>
-                <input
-                  className="FormControl RolevayaInput--medium"
-                  value={this.tagEpisodes}
-                  oninput={(e: any) => {
-                    this.tagEpisodes = e.target.value;
-                  }}
-                  onchange={() => this.setting('forumaker-rolevaya.tagEpisodes')(this.tagEpisodes.trim() || 'episodes')}
-                  placeholder="episodes"
-                />
-              </div>
-
-              <div className="Form-group">
-                <label>Тег арены</label>
-                <input
-                  className="FormControl RolevayaInput--medium"
-                  value={this.arenaTagSlug}
-                  oninput={(e: any) => {
-                    this.arenaTagSlug = e.target.value;
-                  }}
-                  onchange={() => this.setting('forumaker-rolevaya.arenaTagSlug')(this.arenaTagSlug.trim() || 'arena')}
-                  placeholder="arena"
-                />
-                <p className="helpText">Используется для ссылки «На Арену» в виджете на главной</p>
-              </div>
-            </div>
-          )}
-
-          {Section(
-            'fas fa-users-slash',
-            'Игроки и ID',
-            'Фильтры Зала Славы',
-            <div className="RolevayaAdminPanel">
-              <div className="Form-group">
-                <label>ID Хранителей</label>
-                <input
-                  className="FormControl"
-                  value={this.guardianDiscussionIdsText}
-                  oninput={(e: any) => {
-                    this.guardianDiscussionIdsText = e.target.value;
-                  }}
-                  onchange={() => this.updateIdListSetting('forumaker-rolevaya.guardianDiscussionIds', this.guardianDiscussionIdsText)}
-                  placeholder="52, 61, 55, 59"
-                />
-              </div>
-
-              <div className="Form-group">
-                <label>ID Кураторов</label>
-                <input
-                  className="FormControl"
-                  value={this.curatorUserIdsText}
-                  oninput={(e: any) => {
-                    this.curatorUserIdsText = e.target.value;
-                  }}
-                  onchange={() => this.updateIdListSetting('forumaker-rolevaya.curatorUserIds', this.curatorUserIdsText)}
-                  placeholder="10, 27, 14"
-                />
-              </div>
-
-              <div className="Form-group">
-                <label>ID исключенных анкет</label>
-                <input
-                  className="FormControl"
-                  value={this.excludeCharacterDiscussionIdsText}
-                  oninput={(e: any) => {
-                    this.excludeCharacterDiscussionIdsText = e.target.value;
-                  }}
-                  onchange={() => this.updateIdListSetting('forumaker-rolevaya.excludeCharacterDiscussionIds', this.excludeCharacterDiscussionIdsText)}
-                  placeholder="Например: 12, 45"
-                />
-                <p className="helpText">
-                  Укажите через запятую ID тем, которые нужно исключить из Зала Славы
-                </p>
-              </div>
-
-              <div className="Form-group">
-                <label>Дни активности. 0 — за всё время</label>
-                <input
-                  className="FormControl RolevayaInput--medium"
-                  type="number"
-                  min="0"
-                  value={this.activityPeriodDaysText}
-                  oninput={(e: any) => {
-                    this.activityPeriodDaysText = e.target.value;
-                  }}
-                  onchange={() => this.updateActivityPeriodDaysSetting(this.activityPeriodDaysText)}
-                  placeholder="0"
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="RolevayaAdminSubmit">
-            {this.submitButton()}
-          </div>
+          {this.renderBestBonus()}
+          {this.renderManualPerks()}
+          {this.renderTags()}
+          {this.renderFilters()}
+          <div className="RolevayaAdminSubmit">{this.submitButton()}</div>
         </div>
       </div>
+    );
+  }
+
+  private renderBestBonus() {
+    return (
+      <BestBonusSection
+        bestBonus={this.bestBonus}
+        collapsed={this.bestBonusCollapsed}
+        onToggleCollapse={() => {
+          this.bestBonusCollapsed = !this.bestBonusCollapsed;
+          m.redraw();
+        }}
+        onUpdate={(field, value) => this.updateBestBonus(field, value)}
+      />
+    );
+  }
+
+  private renderManualPerks() {
+    return Section(
+      'fas fa-wand-sparkles',
+      'Дары',
+      'Ручные перки для конкретных анкет',
+      <ManualPerksSection
+        groups={this.manualPerkGroups}
+        collapsedGroups={this.collapsedGroups}
+        discussionTitles={this.discussionTitles}
+        newDiscussionId={this.newDiscussionId}
+        onNewDiscussionIdChange={(value) => {
+          this.newDiscussionId = value;
+        }}
+        onAddGroup={() => this.addDiscussionGroup()}
+        onToggleGroup={(id) => this.toggleGroup(id)}
+        onAddPerk={(groupIndex) => this.addPerkToGroup(groupIndex)}
+        onRemoveGroup={(groupIndex) => this.removeDiscussionGroup(groupIndex)}
+        onRemovePerk={(groupIndex, perkIndex) => this.removeManualPerk(groupIndex, perkIndex)}
+        onUpdatePerk={(groupIndex, perkIndex, field, value) => this.updateManualPerk(groupIndex, perkIndex, field, value)}
+      />
+    );
+  }
+
+  private renderTags() {
+    return Section(
+      'fas fa-tags',
+      'Теги',
+      'Откуда Зал Славы собирает статистику',
+      <TagsSection
+        loaded={this.tagsLoaded}
+        tagCharacters={this.tagCharacters}
+        tagCharactersTag={this.tagCharactersTag}
+        tagRole={this.tagRole}
+        tagRoleTag={this.tagRoleTag}
+        tagEpisodes={this.tagEpisodes}
+        tagEpisodesTag={this.tagEpisodesTag}
+        arenaTagSlug={this.arenaTagSlug}
+        arenaTag={this.arenaTagSlugTag}
+        onPickCharacters={(tag) => this.pickTag('characters', tag)}
+        onPickRole={(tag) => this.pickTag('role', tag)}
+        onPickEpisodes={(tag) => this.pickTag('episodes', tag)}
+        onPickArena={(tag) => this.pickTag('arena', tag)}
+      />
+    );
+  }
+
+  private renderFilters() {
+    return Section(
+      'fas fa-users-slash',
+      'Игроки и ID',
+      'Фильтры Зала Славы',
+      <FiltersSection
+        tagCharacters={this.tagCharacters}
+        guardianDiscussionIds={this.guardianDiscussionIds}
+        guardianTitles={this.discussionTitles}
+        onAddGuardian={(id, title) => this.addGuardianDiscussion(id, title)}
+        onRemoveGuardian={(id) => this.removeGuardianDiscussion(id)}
+        curatorUserIds={this.curatorUserIds}
+        curatorUsernames={this.curatorUsernames}
+        onAddCurator={(id, username) => this.addCurator(id, username)}
+        onRemoveCurator={(id) => this.removeCurator(id)}
+        excludeCharacterDiscussionIdsText={this.excludeCharacterDiscussionIdsText}
+        onExcludeCharacterDiscussionIdsInput={(value) => {
+          this.excludeCharacterDiscussionIdsText = value;
+        }}
+        onExcludeCharacterDiscussionIdsCommit={() =>
+          this.updateIdListSetting('forumaker-rolevaya.excludeCharacterDiscussionIds', this.excludeCharacterDiscussionIdsText)
+        }
+        activityPeriodDaysText={this.activityPeriodDaysText}
+        onActivityPeriodDaysInput={(value) => {
+          this.activityPeriodDaysText = value;
+        }}
+        onActivityPeriodDaysCommit={() => this.updateActivityPeriodDaysSetting(this.activityPeriodDaysText)}
+      />
     );
   }
 }

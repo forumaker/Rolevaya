@@ -25,7 +25,12 @@ export default class ActivityTab extends Component {
   excludeCurators = false;
   sort: 'posts_count' | 'avg_chars' | 'completed_arcs_count' | 'completed_episodes_count' = 'posts_count';
   minPosts = 0;
-  limit = 50;
+
+  // See CharactersTab for why this starts low: each row needs a separate
+  // user hydration request, shared across all three leaderboard tabs.
+  limit = 24;
+  private readonly pageSize = 24;
+  private readonly maxLimit = 200;
 
   loading = false;
   recalcLoading = false;
@@ -69,6 +74,17 @@ export default class ActivityTab extends Component {
       this.loading = false;
       m.redraw();
     }
+  }
+
+  get canLoadMore() {
+    return !this.loading && this.rows.length >= this.limit && this.limit < this.maxLimit;
+  }
+
+  async loadMore() {
+    if (!this.canLoadMore) return;
+
+    this.limit = Math.min(this.maxLimit, this.limit + this.pageSize);
+    await this.load(true);
   }
 
   /**
@@ -250,6 +266,14 @@ export default class ActivityTab extends Component {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {this.canLoadMore && (
+          <div className="RolevayaLoadMore">
+            <button type="button" className="Button" onclick={() => this.loadMore()}>
+              Показать ещё
+            </button>
           </div>
         )}
       </div>

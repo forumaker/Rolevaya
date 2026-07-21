@@ -54,7 +54,16 @@ export default class CharactersTab extends Component {
 
   excludeGuardians = false;
   sort: 'roleplay_experience' | 'sum' | 'physiology' | 'dexterity' | 'magic' | 'charisma' = 'roleplay_experience';
-  limit = 50;
+
+  // Kept low on first load: each row's card needs its user hydrated via a
+  // separate /api/users/{id} request (see statsShared.ensureUsersLoaded),
+  // and with three tabs mounted at once those requests share one queue. A
+  // smaller initial page keeps the first-load request burst small; "Показать
+  // ещё" (loadMore) raises the limit and re-fetches only when the admin
+  // actually wants to see further down the board.
+  limit = 24;
+  private readonly pageSize = 24;
+  private readonly maxLimit = 200;
 
   loading = false;
   recalcLoading = false;
@@ -109,6 +118,17 @@ export default class CharactersTab extends Component {
       this.loading = false;
       m.redraw();
     }
+  }
+
+  get canLoadMore() {
+    return !this.loading && this.rows.length >= this.limit && this.limit < this.maxLimit;
+  }
+
+  async loadMore() {
+    if (!this.canLoadMore) return;
+
+    this.limit = Math.min(this.maxLimit, this.limit + this.pageSize);
+    await this.load(true);
   }
 
   /** Called by the parent's shared "Обновить" button when this tab is active. */
@@ -362,6 +382,14 @@ export default class CharactersTab extends Component {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {this.canLoadMore && (
+          <div className="RolevayaLoadMore">
+            <button type="button" className="Button" onclick={() => this.loadMore()}>
+              Показать ещё
+            </button>
           </div>
         )}
       </div>

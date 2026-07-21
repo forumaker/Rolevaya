@@ -1,4 +1,6 @@
 import Component from 'flarum/common/Component';
+import type m from 'mithril';
+import { renderMarkdownParagraphs } from '../../common/markdown';
 
 export type CardPerk = {
   key: string;
@@ -156,41 +158,9 @@ export default class CardPerkIcons extends Component<Attrs> {
     this.pos = { top, left, placement };
   }
 
-  private escapeHtml(text: string): string {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  private renderSimpleMarkdown(text: string) {
-    const normalized = String(text || '').replace(/\r\n/g, '\n').trim();
-
-    if (!normalized) {
-      return 'Описание пока не добавлено';
-    }
-
-    const paragraphs = normalized
-      .split(/\n{2,}/)
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .map((part) => {
-        let html = this.escapeHtml(part);
-
-        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-        html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-        html = html.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>');
-        html = html.replace(/(?<!_)_([^_\n]+)_(?!_)/g, '<em>$1</em>');
-        html = html.replace(/\n/g, '<br>');
-
-        return `<p>${html}</p>`;
-      })
-      .join('');
-
-    return m.trust(paragraphs);
+  private renderPerkDescription(text: string): m.Children {
+    const rendered = renderMarkdownParagraphs(text);
+    return rendered ?? 'Описание пока не добавлено';
   }
 
   private renderPortal(open: boolean) {
@@ -270,7 +240,7 @@ export default class CardPerkIcons extends Component<Attrs> {
             {perk.label}
           </div>
           <div className="RolevayaPerkDescription" style={textStyle}>
-            {this.renderSimpleMarkdown(perk.description || '')}
+            {this.renderPerkDescription(perk.description || '')}
           </div>
         </div>
       </div>
