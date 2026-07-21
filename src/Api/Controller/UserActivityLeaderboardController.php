@@ -12,13 +12,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/**
- * Deliberately returns a plain Laminas JsonResponse with a custom envelope
- * rather than a Flarum JSON:API document — see CharacterLeaderboardController
- * for the rationale. Same trade-off applies: not visible to app.store, not
- * decoratable via Extend\ApiSerializer, and the response shape is not a
- * stable third-party contract.
- */
 class UserActivityLeaderboardController implements RequestHandlerInterface
 {
     public function __construct(
@@ -50,9 +43,7 @@ class UserActivityLeaderboardController implements RequestHandlerInterface
         if ($limit > 200) $limit = 200;
 
         $excludeCurators = (int) Arr::get($query, 'exclude_curators', 0) === 1;
-        // Empty by default: forum-specific IDs an admin must configure
-        // themselves (see admin settings page).
-        $curatorUserIds = SettingsIdList::read(
+                        $curatorUserIds = SettingsIdList::read(
             $this->settings,
             'forumaker-rolevaya.curatorUserIds',
             []

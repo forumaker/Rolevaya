@@ -143,11 +143,7 @@ return [
             'forumaker-rolevaya.manualPerks',
             'forumaker-rolevaya.manualPerks'
         )
-        // Tag slugs are public taxonomy (not sensitive like the guardian/
-        // curator ID lists above), and the forum widget needs them to build
-        // links to the characters/arena tag pages without a hardcoded
-        // third-party domain baked into the compiled JS.
-        ->serializeToForum(
+                                        ->serializeToForum(
             'forumaker-rolevaya.tagCharacters',
             'forumaker-rolevaya.tagCharacters'
         )
@@ -163,13 +159,6 @@ return [
             'forumaker-rolevaya.arenaTagSlug',
             'forumaker-rolevaya.arenaTagSlug'
         ),
-        // guardianDiscussionIds and curatorUserIds are deliberately NOT
-        // serialized to the forum frontend: they're internal moderation
-        // role assignments, not something anonymous visitors need to see.
-        // The server-side controllers already read them straight from
-        // settings, and the client-side exclude toggles only need to send
-        // exclude_guardians/exclude_curators — the actual ID lists never
-        // need to reach the browser.
 
     (new Extend\Console())
         ->command(RecalculateUserActivity::class)

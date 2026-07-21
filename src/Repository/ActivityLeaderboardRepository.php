@@ -6,11 +6,6 @@ use forumaker\Rolevaya\RoleplayTags;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
-/**
- * Confines the raw query-builder access needed for the user activity
- * leaderboard (user_activity_snapshots joined with users and per-user
- * completed arc/episode counts) to a single dedicated class.
- */
 class ActivityLeaderboardRepository extends DatabaseRepository
 {
     public function __construct(
@@ -20,9 +15,6 @@ class ActivityLeaderboardRepository extends DatabaseRepository
         parent::__construct($db);
     }
 
-    /**
-     * @param int[] $excludeUserIds
-     */
     public function topActivity(
         int $period,
         string $sort,
@@ -78,11 +70,7 @@ class ActivityLeaderboardRepository extends DatabaseRepository
                 break;
 
             default:
-                // 'stability' was removed as a user-facing sort option (not
-                // a metric this forum surfaces), but stability_ratio still
-                // exists as a tie-breaker on 'posts_count' above and as a
-                // safety-net ordering here for any unrecognised $sort value.
-                $q->orderByDesc('uas.stability_ratio')
+                                                                                $q->orderByDesc('uas.stability_ratio')
                   ->orderByDesc('uas.posts_count');
                 break;
         }

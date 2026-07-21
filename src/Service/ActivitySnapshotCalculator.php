@@ -7,16 +7,6 @@ use Flarum\Settings\SettingsRepositoryInterface;
 use forumaker\Rolevaya\Repository\ActivitySnapshotRepository;
 use forumaker\Rolevaya\RoleplayTags;
 
-/**
- * Shared implementation for recalculating user_activity_snapshots, used by
- * both RecalculateActivityController (HTTP) and RecalculateUserActivity
- * (console). Previously this logic was duplicated verbatim between the two
- * call sites.
- *
- * Posts are streamed via a cursor rather than loaded in bulk with get() so
- * that a forum with thousands of roleplay posts doesn't have to hold every
- * post's full content in PHP memory at once.
- */
 class ActivitySnapshotCalculator
 {
     private const MIN_POST_LENGTH = 400;
@@ -27,16 +17,11 @@ class ActivitySnapshotCalculator
         protected RoleplayTags $tags
     ) {}
 
-    /**
-     * @return array{rows: int, calculated_at: string, period_days: int, scope_tag: string}
-     */
     public function calculate(): array
     {
         $roleTag = $this->tags->role();
 
-        // 0 = all-time. Configurable via forumaker-rolevaya.activityPeriodDays
-        // so the rolling-window filter below can actually be exercised.
-        $period = (int) $this->settings->get('forumaker-rolevaya.activityPeriodDays', 0);
+                        $period = (int) $this->settings->get('forumaker-rolevaya.activityPeriodDays', 0);
         if ($period < 0) {
             $period = 0;
         }
@@ -46,10 +31,7 @@ class ActivitySnapshotCalculator
 
         $stats = [];
 
-        // cursor() (via the repository) hydrates one row at a time instead
-        // of materialising the whole result set (including the full post
-        // content column) in memory up front.
-        foreach ($this->repository->scanPosts($roleTag, $period, $now) as $post) {
+                                foreach ($this->repository->scanPosts($roleTag, $period, $now) as $post) {
             $userId = (int) ($post->user_id ?? 0);
             if ($userId <= 0) {
                 continue;
@@ -112,12 +94,6 @@ class ActivitySnapshotCalculator
         ];
     }
 
-    /**
-     * Ratio of weeks the user was active (posted at least one qualifying
-     * post) out of every week since their first qualifying post, capped at
-     * 1.0. Gives a rough measure of how consistently someone has kept
-     * posting since they started, rather than just a raw post count.
-     */
     private function stabilityRatio(string $firstPostAt, int $activeWeeks, CarbonImmutable $now): float
     {
         $firstWeekStart = CarbonImmutable::parse($firstPostAt)->startOfWeek();

@@ -57,14 +57,6 @@ class EpisodeCompletionParser
         return $bodies;
     }
 
-    /**
-     * Extracts every mentioned participant, keeping the raw mention
-     * identity (post id or user id) alongside the display name so the
-     * caller can resolve the real Flarum user rather than trusting the
-     * mentioned text, which can differ from the actual username.
-     *
-     * @return array<int, array{username: string, mention_type: ?string, mention_id: ?int}>
-     */
     private function extractMentionedParticipants(string $body): array
     {
         $participants = [];

@@ -1,37 +1,38 @@
 .RolevayaAdmin {
-  --mst-radius-lg: 16px;
-  --mst-radius-md: 12px;
-  --mst-radius-sm: 10px;
-  --mst-border: var(--control-bg, #e5e7eb);
+
+  --mst-radius-lg: 10px;
+  --mst-radius-md: 8px;
+  --mst-radius-sm: 6px;
+  --mst-border: var(--control-border-color, #e5e7eb);
   --mst-surface: var(--body-bg, #fff);
-  --mst-surface-soft: color-mix(in srgb, var(--control-bg, #e5e7eb) 22%, transparent);
-  --mst-surface-softer: color-mix(in srgb, var(--control-bg, #e5e7eb) 14%, transparent);
-  --mst-text: var(--text-color, #111827);
+  --mst-surface-soft: var(--control-bg, #f3f4f6);
+  --mst-text: var(--body-color, #111827);
   --mst-muted: var(--muted-color, #6b7280);
   --mst-primary: var(--primary-color, #6d28d9);
-  --mst-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --mst-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
   --mst-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-  --mst-transition: 180ms ease;
+  --mst-transition: 150ms ease;
 }
 
 .RolevayaAdmin-shell {
   max-width: 1200px;
-  margin: 28px auto 0;
+  margin: 24px auto 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .RolevayaAdminSection {
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  border: 1px solid var(--mst-border);
+  border-radius: var(--mst-radius-md);
+  background: var(--mst-surface);
+  box-shadow: var(--mst-shadow-sm);
 }
 
 .RolevayaAdminSection-header {
-  padding: 0 0 12px;
-  border-bottom: none;
+  padding: 20px 20px 14px;
+
+  border-bottom: 2px solid var(--mst-surface-soft);
   background: transparent;
 }
 
@@ -42,9 +43,9 @@
 }
 
 .RolevayaAdminSection-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--mst-radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -55,7 +56,8 @@
 
 .RolevayaAdminSection-titleText h3 {
   margin: 0 0 6px;
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: 700;
   line-height: 1.2;
   color: var(--mst-text);
 }
@@ -63,11 +65,12 @@
 .RolevayaAdminSection-titleText p {
   margin: 0;
   color: var(--mst-muted);
+  font-size: 12px;
   line-height: 1.55;
 }
 
 .RolevayaAdminSection-content {
-  padding: 0;
+  padding: 20px;
 }
 
 .RolevayaAdminGrid {
@@ -230,7 +233,7 @@
 .RolevayaPreviewCard-icon {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: var(--mst-radius-md);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -402,30 +405,12 @@
 }
 
 .RolevayaSearchSelect {
-  // Same 560px cap as every other text input on this page (see
-  // `.RolevayaAdmin .FormControl` above, and "ID исключенных анкет" below)
-  // so all the fields in this panel line up at one consistent width. This
-  // single selector covers the input in BOTH the guardian field (rendered
-  // via SearchSelectField/AutocompleteDropdown) and the curator field
-  // (rendered via its own -inputWrap markup) so the two boxes are always
-  // exactly the same size, rather than diverging per-field. Now that the
-  // AutocompleteDropdown shrink-wrap bug below is fixed, 560px is plenty
-  // for even the longest placeholder ("Введите отображаемое имя").
+
   max-width: 560px;
   width: 100%;
   position: relative;
 }
 
-// flarum/common/components/AutocompleteDropdown (used by GuardianCharacterField
-// via SearchSelectField) wraps the <input> in its own `.AutocompleteDropdown`
-// div (see AutocompleteDropdown.tsx's view(): `<div className="AutocompleteDropdown">
-// {vnode.children}<ul className="Dropdown-menu Dropdown-suggestions">…`).
-// Core's own CSS for that wrapper shrink-wraps it, which was silently
-// capping the guardian input's width regardless of anything set on
-// `.RolevayaSearchSelect` or `.FormControl` — force it to stretch full width
-// here. `!important` is used because core's rule and this one are declared
-// with comparable specificity, and load order isn't something this
-// extension controls.
 .RolevayaSearchSelect .AutocompleteDropdown {
   display: block !important;
   width: 100% !important;
@@ -618,7 +603,8 @@
 }
 
 .RolevayaAdminSection + .RolevayaAdminSection {
-  margin-top: 28px;
+
+  margin-top: 20px;
 }
 
 @media (max-width: 980px) {

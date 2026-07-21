@@ -4,18 +4,9 @@ namespace forumaker\Rolevaya\Repository;
 
 use Illuminate\Support\Collection;
 
-/**
- * Shared discussion/post scanning queries used by the character-sheet, arc-
- * completion, and episode-completion backfill services. Confines
- * ConnectionInterface usage to the repository layer (per Flarum convention)
- * instead of injecting it into the service classes directly.
- */
 class RoleplayScanRepository extends DatabaseRepository
 {
-    /**
-     * @param int[] $excludeDiscussionIds
-     * @return int[]
-     */
+
     public function discussionIdsForTag(
         string $tagSlug,
         ?int $limit = null,
@@ -46,13 +37,6 @@ class RoleplayScanRepository extends DatabaseRepository
         return $q->pluck('discussion_id')->all();
     }
 
-    /**
-     * Posts likely to contain a completion announcement ("[success" or
-     * "<SUCCESS" markers), for the given chunk of discussion IDs. Shared by
-     * ArcCompletionBackfill and EpisodeCompletionBackfill.
-     *
-     * @param int[] $discussionIdChunk
-     */
     public function completionCandidatePosts(array $discussionIdChunk): Collection
     {
         return $this->db->table('posts')
@@ -68,13 +52,6 @@ class RoleplayScanRepository extends DatabaseRepository
             ->get(['id', 'discussion_id', 'content']);
     }
 
-    /**
-     * Character-sheet candidate posts: within the first $scanLimit posts of
-     * each discussion, ordered so the configured target post number is
-     * tried first.
-     *
-     * @param int[] $discussionIdChunk
-     */
     public function characterSheetCandidatePosts(array $discussionIdChunk, int $scanLimit, int $targetNumber): Collection
     {
         return $this->db->table('posts')

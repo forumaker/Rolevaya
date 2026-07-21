@@ -16,12 +16,6 @@ type Attrs = {
   onUpdatePerk: (groupIndex: number, perkIndex: number, field: keyof ManualPerk, value: any) => void;
 };
 
-/**
- * "Дары" section: add a discussion, then attach one or more perk cards to it.
- *
- * Called directly as ManualPerksSection(attrs), not used as a JSX tag —
- * see PerkPreviewCard.tsx for why.
- */
 export default function ManualPerksSection(attrs: Attrs) {
   const {
     groups,

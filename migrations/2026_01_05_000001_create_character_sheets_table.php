@@ -19,9 +19,7 @@ return [
             $table->unsignedTinyInteger('dexterity');
             $table->unsignedTinyInteger('magic');
             $table->unsignedTinyInteger('charisma');
-            // Sum of the four stats above, each clamped 0-99 => max 396, so
-            // this needs more range than TINYINT UNSIGNED (max 255) gives.
-            $table->unsignedSmallInteger('sum');
+                                    $table->unsignedSmallInteger('sum');
 
             $table->unsignedBigInteger('source_post_id');
             $table->timestamp('parsed_at')->nullable();

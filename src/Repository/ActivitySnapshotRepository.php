@@ -6,18 +6,9 @@ use Carbon\CarbonImmutable;
 use forumaker\Rolevaya\Model\UserActivitySnapshot;
 use Illuminate\Support\LazyCollection;
 
-/**
- * Confines the raw query-builder access needed to scan roleplay posts and
- * replace user_activity_snapshots rows to a single dedicated class, so
- * ActivitySnapshotCalculator doesn't need to depend on ConnectionInterface
- * directly.
- */
 class ActivitySnapshotRepository extends DatabaseRepository
 {
-    /**
-     * Streams matching posts via a cursor rather than loading them all into
-     * memory at once (see ActivitySnapshotCalculator for why that matters).
-     */
+
     public function scanPosts(string $roleTag, int $period, CarbonImmutable $now): LazyCollection
     {
         $postsQ = $this->db->table('posts')
@@ -43,18 +34,6 @@ class ActivitySnapshotRepository extends DatabaseRepository
         return $postsQ->cursor();
     }
 
-    /**
-     * Replaces all snapshot rows for the given period/scope in a single
-     * transaction: delete then chunked bulk insert.
-     *
-     * This is a single-table operation, so it goes through the
-     * UserActivitySnapshot AbstractModel rather than the raw query builder
-     * (unlike scanPosts() above, which genuinely needs a multi-table join
-     * that doesn't map onto any one model). $this->db is only used here to
-     * wrap both steps in one transaction.
-     *
-     * @param array<int, array<string, mixed>> $payload
-     */
     public function replaceSnapshots(int $period, string $roleTag, array $payload): void
     {
         $this->db->transaction(function () use ($period, $roleTag, $payload) {

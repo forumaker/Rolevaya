@@ -4,25 +4,12 @@ namespace forumaker\Rolevaya\Repository;
 
 use Illuminate\Support\Collection;
 
-/**
- * Reads the Arena extension's own `arena_stats` table directly at request
- * time — same approach as before, kept isolated in a repository rather than
- * injecting ConnectionInterface straight into the controller. This still
- * keeps working (returning an empty list) even if the Arena extension is
- * ever disabled, since it doesn't depend on Arena's PHP classes.
- */
 class ArenaLeaderboardRepository extends DatabaseRepository
 {
-    /**
-     * @param int[] $excludeUserIds
-     */
+
     public function topArena(string $sort, int $limit, bool $excludeCurators, array $excludeUserIds): Collection
     {
-        // Floating-point division forced via "* 1.0" so SQLite (which
-        // truncates integer division to 0 or 1) computes the same result as
-        // MySQL/PostgreSQL; the CASE avoids a division-by-zero for players
-        // who've only ever drawn.
-        $winRateExpr = "CASE WHEN (arena_stats.wins + arena_stats.losses) = 0 THEN 0 "
+                                        $winRateExpr = "CASE WHEN (arena_stats.wins + arena_stats.losses) = 0 THEN 0 "
             . "ELSE ROUND((arena_stats.wins * 1.0 / (arena_stats.wins + arena_stats.losses)) * 100) END";
 
         $q = $this->db->table('arena_stats')

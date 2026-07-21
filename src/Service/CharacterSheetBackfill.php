@@ -23,11 +23,7 @@ class CharacterSheetBackfill
         $charactersTag = $this->tags->characters();
         $targetNumber  = (int) $this->settings->get('forumaker-rolevaya.charactersPostNumber', 3);
 
-        // Empty by default: discussion IDs to exclude are forum-specific and
-        // must be configured by the admin (see admin settings page). A
-        // non-empty hardcoded fallback would silently exclude arbitrary
-        // discussions on any other install.
-        $excludeDiscussionIds = SettingsIdList::read(
+                                        $excludeDiscussionIds = SettingsIdList::read(
             $this->settings,
             'forumaker-rolevaya.excludeCharacterDiscussionIds',
             []
@@ -91,12 +87,7 @@ class CharacterSheetBackfill
             }
 
             if ($rows) {
-                // One upsert per chunk (against the discussion_id unique
-                // index) instead of one SELECT+INSERT/UPDATE per discussion
-                // via updateOrCreate() — collapses up to 500 queries into 1.
-                // created_at/updated_at are set explicitly because upsert()
-                // bypasses Eloquent's automatic timestamp handling.
-                CharacterSheet::query()->upsert(
+                                                                                                CharacterSheet::query()->upsert(
                     $rows,
                     ['discussion_id'],
                     [

@@ -8,10 +8,7 @@ class CharacterSheet extends AbstractModel
 {
     protected $table = 'character_sheets';
 
-    // AbstractModel turns Eloquent's timestamp handling off by default; this
-    // table has created_at/updated_at columns and relies on them being
-    // maintained automatically (e.g. via updateOrCreate()).
-    public $timestamps = true;
+                public $timestamps = true;
 
     protected $fillable = [
         'discussion_id',

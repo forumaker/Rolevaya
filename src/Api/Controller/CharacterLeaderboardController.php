@@ -12,17 +12,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/**
- * Deliberately returns a plain Laminas JsonResponse with a custom envelope
- * instead of a Flarum JSON:API document via AbstractSerializeController.
- * This is a pragmatic choice for an aggregation endpoint (leaderboard rows
- * spanning discussions/users/character_sheets) that doesn't map onto a
- * single JSON:API resource type, at the cost of this data being invisible
- * to app.store and not decoratable via Extend\ApiSerializer. The frontend
- * fetches it directly with app.request() rather than app.store.find().
- * Third-party extensions should not rely on this response shape remaining
- * stable in the way core JSON:API resources are.
- */
 class CharacterLeaderboardController implements RequestHandlerInterface
 {
     public function __construct(
@@ -47,11 +36,7 @@ class CharacterLeaderboardController implements RequestHandlerInterface
         if ($limit > 200) $limit = 200;
 
         $excludeGuardians = (int) Arr::get($query, 'exclude_guardians', 0) === 1;
-        // Empty by default: these are forum-specific IDs an admin must
-        // configure themselves (see admin settings page). A non-empty
-        // hardcoded fallback would silently exclude arbitrary discussions
-        // on any other install.
-        $guardianDiscussionIds = SettingsIdList::read(
+                                        $guardianDiscussionIds = SettingsIdList::read(
             $this->settings,
             'forumaker-rolevaya.guardianDiscussionIds',
             []

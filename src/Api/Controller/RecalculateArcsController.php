@@ -21,12 +21,7 @@ class RecalculateArcsController implements RequestHandlerInterface
         $actor = RequestUtil::getActor($request);
         $actor->assertPermission('forumaker-rolevaya.recalculate');
 
-        // Scanning every roleplay discussion can take a while on a large
-        // forum, so this is queued rather than run synchronously inside the
-        // HTTP request (see RecalculateArcsJob). With the default "sync"
-        // queue driver this still runs immediately; with a database or
-        // Redis driver configured it's picked up by the queue worker.
-        $this->queue->push(new RecalculateArcsJob());
+                                                $this->queue->push(new RecalculateArcsJob());
 
         return new JsonResponse([
             'ok' => true,

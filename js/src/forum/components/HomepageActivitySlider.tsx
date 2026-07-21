@@ -4,20 +4,6 @@ import ArenaSlider from './homeSlider/ArenaSlider';
 
 type HomeTab = 'roleplay' | 'arena';
 
-/**
- * Homepage activity widget: a tab switcher (Ролевая / Арена) composing two
- * self-contained sliders. Each tab's data loading, caching, carousel, and
- * rendering lives in its own component (RoleplaySlider / ArenaSlider) — this
- * component only owns which tab is currently shown.
- *
- * Both sliders are always mounted (never conditionally removed from the
- * tree) and toggled with plain CSS visibility instead. That's what lets
- * each one keep its own in-memory state (carousel position, loaded rows)
- * across tab switches without this parent having to coordinate anything —
- * ArenaSlider itself knows to defer its first data fetch until its `active`
- * prop first becomes true, so switching tabs is still what triggers Арена's
- * lazy load, exactly as before the split.
- */
 export default class HomepageActivitySlider extends Component {
   activeTab: HomeTab = 'roleplay';
 

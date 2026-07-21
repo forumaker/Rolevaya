@@ -2,12 +2,6 @@ import app from 'flarum/forum/app';
 import Component from 'flarum/common/Component';
 import Link from 'flarum/common/components/Link';
 import User from 'flarum/common/models/User';
-// The real Flarum core `Avatar` component (a class, not the standalone
-// `flarum/common/helpers/avatar` function — that one isn't registered in
-// this forum's build and crashes on import). Rendering through this
-// component is also the exact hook Point System's avatar-frame feature
-// patches (`extend(Avatar.prototype, 'view', ...)` in its forum/index.tsx),
-// so using it here is what makes decorations show up in this widget too.
 import Avatar from 'flarum/common/components/Avatar';
 import { apiUrl, avatarUrl, ensureUsersLoaded, forumBaseUrl, formatNumber, playerName, userProfilePath } from '../stats/statsShared';
 import { CarouselController } from './CarouselController';
@@ -31,25 +25,12 @@ function statsEqual(a: ActivityRow, b: ActivityRow) {
 
 const softRefreshMs = 60 * 1000;
 
-// Module-scope (not per-component-instance) so data survives this component
-// being unmounted and remounted — e.g. navigating away from the homepage and
-// back. See SliderCache's own doc comment.
 const cache = new SliderCache<ActivityRow>('forumaker-rolevaya-home-slider-v3');
 
 interface Attrs {
-  /** Whether the Ролевая tab is the one currently shown (parent toggles
-   *  visibility via CSS rather than unmounting, so this component's state —
-   *  and the module-level cache above — survive tab switches). */
   active: boolean;
 }
 
-/**
- * "Ролевая" tab of the homepage activity widget. Loads eagerly on mount
- * (unlike ArenaSlider, which waits for its tab to be opened at least once)
- * since this is the data shown by default. Split out of the old ~900-line
- * HomepageActivitySlider.tsx so this tab's data loading, caching, carousel,
- * and rendering can be understood on their own.
- */
 export default class RoleplaySlider extends Component<Attrs> {
   loading = true;
   error: string | null = null;
@@ -195,17 +176,6 @@ export default class RoleplaySlider extends Component<Attrs> {
       this.loading = false;
       m.redraw();
 
-      // Row data can be "fresh" (< softRefreshMs old, from sessionStorage)
-      // while the actual User models needed for Avatar rendering — and
-      // therefore Point System's decoration frames — are completely absent:
-      // app.store is a fresh, empty, in-memory map on every hard page
-      // reload, independent of our own row cache. Without this call, a
-      // reload landing in this fast path (the common case, since our own
-      // earlier reload just wrote this cache) never fetched any User model
-      // at all, so no frame could ever show up until something else (like
-      // switching tabs) happened to trigger a real load elsewhere.
-      // ensureUsersLoaded() already skips ids already present in the store,
-      // so this is a no-op once everything is warm.
       await ensureUsersLoaded(this.rows.map((r) => r.user_id));
       m.redraw();
 
@@ -229,9 +199,6 @@ export default class RoleplaySlider extends Component<Attrs> {
 
       m.redraw();
       await ensureUsersLoaded(this.rows.map((r) => r.user_id));
-      // Redraw again once the full User models (and therefore any avatar
-      // decoration a plugin applies to them) have actually landed in the
-      // store — the m.redraw() above only reflects the cached row data.
       m.redraw();
 
       if (now - cached.ts >= softRefreshMs) {
@@ -245,16 +212,10 @@ export default class RoleplaySlider extends Component<Attrs> {
     await this.fetchFresh(true);
   }
 
-  /** This extension's own /top route (see extend.php), forum-relative so
-   *  it keeps working regardless of domain — this used to be a hardcoded
-   *  https://questpost.ru/top, which would have silently pointed every
-   *  other install of this extension back at this forum. */
   private hallOfFameUrl() {
     return `${forumBaseUrl()}/top`;
   }
 
-  /** Tag page URL built from the configurable characters tag slug (admin
-   *  settings) rather than a hardcoded domain+slug. */
   private charactersTagUrl() {
     const slug = (app.forum.attribute('forumaker-rolevaya.tagCharacters') as string | undefined) || 'characters';
     return `${forumBaseUrl()}/t/${slug}`;
@@ -336,11 +297,6 @@ export default class RoleplaySlider extends Component<Attrs> {
                   {rows.map((row, index) => {
                     const player = playerName(row);
                     const profile = userProfilePath(row.user_id, row.username);
-                    // The real User model is what the Avatar component (and
-                    // therefore Point System's decoration patch on it)
-                    // needs — ensureUsersLoaded() is what puts it in the
-                    // store. Until that resolves, fall back to a plain
-                    // <img>/placeholder built from the row's own data.
                     const userModel = app.store.getById('users', String(row.user_id)) as User | null;
                     const fallbackAvatar = userModel ? null : avatarUrl(row);
 

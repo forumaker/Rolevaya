@@ -16,23 +16,6 @@ type Attrs = {
   onRemove: (id: number) => void;
 };
 
-/**
- * "ID Кураторов" field: search users by display name (3+ letters) instead
- * of typing a raw user ID.
- *
- * The search logic here is ported 1-to-1 from forumaker/arena's
- * ChallengeModal (js/src/forum/components/ChallengeModal.tsx, the battle
- * creation modal's opponent search) per explicit request: a raw
- * app.request GET against /users with filter[q]/page[limit] params, a
- * 350ms debounce, and a plain <ul> suggestions list — instead of the
- * previous app.store.find + Flarum's AutocompleteDropdown abstract class
- * (SearchSelectField), which required typing the full username to match.
- *
- * This is a real Component class (not a plain function called inline like
- * most of this settings page's other pieces) because it owns non-trivial
- * internal state — see RolevayaSettingsPage.tsx's notes on why plain
- * functions can't be used as JSX tags for stateful pieces.
- */
 export default class CuratorUserField extends Component<Attrs> {
   private username = '';
   private searching = false;

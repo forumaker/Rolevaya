@@ -6,14 +6,6 @@ use forumaker\Rolevaya\RoleplayTags;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
-/**
- * Confines the raw query-builder access needed for the character
- * leaderboard to a single dedicated class. This is a cross-table read
- * (character_sheets joined with discussions/users/tags) that doesn't map
- * cleanly onto a single Eloquent model relationship, so it stays on the
- * query builder rather than Eloquent scopes — but it's isolated here
- * instead of being injected directly into the controller.
- */
 class CharacterLeaderboardRepository extends DatabaseRepository
 {
     public function __construct(
@@ -23,9 +15,6 @@ class CharacterLeaderboardRepository extends DatabaseRepository
         parent::__construct($db);
     }
 
-    /**
-     * @param int[] $excludeDiscussionIds
-     */
     public function topCharacters(string $sort, int $limit, bool $excludeGuardians, array $excludeDiscussionIds): Collection
     {
         $charactersTag = $this->tags->characters();

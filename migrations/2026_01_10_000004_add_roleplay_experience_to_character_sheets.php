@@ -11,9 +11,7 @@ return [
 
         if (!$schema->hasColumn('character_sheets', 'roleplay_experience')) {
             $schema->table('character_sheets', function (Blueprint $table) {
-                // Clamped 0-999 in CharacterSheetParser::extractRoleplayExperience,
-                // so this needs more range than TINYINT UNSIGNED (max 255) gives.
-                $table->unsignedSmallInteger('roleplay_experience')->default(0)->after('sum');
+                                                $table->unsignedSmallInteger('roleplay_experience')->default(0)->after('sum');
                 $table->index(['roleplay_experience'], 'character_sheets_rpexp_idx');
             });
         }

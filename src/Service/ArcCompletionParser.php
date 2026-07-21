@@ -72,15 +72,6 @@ class ArcCompletionParser
         return trim($m[1]);
     }
 
-    /**
-     * Extracts every mentioned participant from a completion block, along
-     * with the raw mention identity (post id or user id) so the caller can
-     * resolve the real Flarum user instead of trusting the mentioned
-     * display name, which can differ from the actual username (custom
-     * nicknames, stylized Unicode text, renamed accounts, etc.).
-     *
-     * @return array<int, array{username: string, mention_type: ?string, mention_id: ?int, experience: int, gold: int}>
-     */
     private function extractParticipants(string $body): array
     {
         $participants = [];
@@ -143,9 +134,6 @@ class ArcCompletionParser
         return $participants;
     }
 
-    /**
-     * @param array<int, array{0: string, 1: int}> $offsetMatches
-     */
     private function segmentAfter(string $body, array $offsetMatches, int $index, int $count): string
     {
         $start = $offsetMatches[$index][1] + strlen($offsetMatches[$index][0]);
@@ -154,9 +142,6 @@ class ArcCompletionParser
         return substr($body, $start, $end - $start);
     }
 
-    /**
-     * @return array{0: int, 1: int} [experience, gold]
-     */
     private function extractRewards(string $segment): array
     {
         $experience = 0;

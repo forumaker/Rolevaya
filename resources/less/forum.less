@@ -33,11 +33,7 @@
   border-radius: 20px;
   border: 1px solid var(--control-bg);
   background: var(--control-bg);
-  // These share the `Button` core class for Flarum's default focus/hover
-  // behavior, but that class also brings its own box-shadow/gradient —
-  // visible as a lighter double rim around the pill, especially once the
-  // background is a solid color like --primary-color on .active. Cleared
-  // explicitly so only this rule's flat background/border show.
+
   background-image: none !important;
   box-shadow: none !important;
   color: var(--muted-color);
@@ -603,8 +599,7 @@ body[data-theme='dark'] .RolevayaTabPanel .RolevayaRank:not(.RolevayaRank--1):no
   align-items: center;
   justify-content: center;
   gap: 8px;
-  // Matches .RolevayaHomeWidget-actions' margin-top exactly, so the gap
-  // above the cards equals the gap below them.
+
   margin-bottom: 16px;
 }
 
@@ -922,10 +917,7 @@ body[data-theme='dark'] .RolevayaHomeCard-stat,
     align-items: center;
     justify-content: center;
     gap: 12px;
-    // Full width so justify-content:center centers the arrow pair against
-    // the card above it — without this the wrap just shrinks to its
-    // content and drifts off-center. See the note near the bottom of this
-    // file for why there's no middle element between the arrows anymore.
+
     width: 100%;
   }
 
@@ -1000,14 +992,6 @@ body[data-theme='dark'] .RolevayaHomeCard-stat,
     margin-top: 12px;
   }
 }
-
-// The tooltip that used to sit here (RolevayaTooltip / RolevayaHomeWidget-hint)
-// was removed from the homepage widget entirely — both tabs now show two
-// action links side by side instead (see renderHallOfFameLink() /
-// renderCreateCharacterLink() / renderArenaTagLink() / renderHowToPlayButton()
-// in HomepageActivitySlider.tsx), and .RolevayaHomeWidget-arrowWrap's flex
-// rule above centers the arrow pair on its own without a middle element to
-// balance against.
 
 .CompletedEntriesModal-body {
   display: flex;

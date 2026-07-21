@@ -9,12 +9,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/**
- * Deliberately returns a plain Laminas JsonResponse with a custom envelope
- * rather than a Flarum JSON:API document — see CharacterLeaderboardController
- * for the rationale. Not visible to app.store, not decoratable via
- * Extend\ApiSerializer, and not a stable third-party contract.
- */
 class ListCompletedEpisodesController implements RequestHandlerInterface
 {
     public function __construct(

@@ -2,7 +2,6 @@ import app from 'flarum/forum/app';
 import Component from 'flarum/common/Component';
 import Link from 'flarum/common/components/Link';
 import User from 'flarum/common/models/User';
-// See RoleplaySlider.tsx for why this is the real core Avatar component.
 import Avatar from 'flarum/common/components/Avatar';
 import { apiUrl, avatarUrl, ensureUsersLoaded, forumBaseUrl, formatNumber, playerName, userProfilePath } from '../stats/statsShared';
 import { CarouselController } from './CarouselController';
@@ -21,25 +20,12 @@ function statsEqual(a: ArenaRow, b: ArenaRow) {
 
 const softRefreshMs = 60 * 1000;
 
-// Module-scope (not per-component-instance) so data survives this component
-// being unmounted and remounted — e.g. navigating away from the homepage and
-// back. See SliderCache's own doc comment.
 const cache = new SliderCache<ArenaRow>('forumaker-rolevaya-home-slider-arena-v1');
 
 interface Attrs {
-  /** Whether the Арена tab is the one currently shown (parent toggles
-   *  visibility via CSS rather than unmounting, so this component's state —
-   *  and the module-level cache above — survive tab switches). */
   active: boolean;
 }
 
-/**
- * "Арена" tab of the homepage activity widget. Unlike RoleplaySlider, this
- * doesn't fetch anything until the visitor switches to this tab at least
- * once — the Арена rows aren't needed on every homepage view. Split out of
- * the old ~900-line HomepageActivitySlider.tsx so this tab's data loading,
- * caching, carousel, and rendering can be understood on their own.
- */
 export default class ArenaSlider extends Component<Attrs> {
   loading = false;
   error: string | null = null;
@@ -47,10 +33,6 @@ export default class ArenaSlider extends Component<Attrs> {
 
   carousel = new CarouselController();
 
-  /** Tracks the previous `active` attr so onupdate() can detect the
-   *  false -> true transition (switching to this tab) and mirror the
-   *  original component's per-switch loadArena() call, which itself
-   *  no-ops instantly when cache is fresh. */
   private wasActive = false;
   private focusListenerEnabled = false;
 
@@ -86,8 +68,6 @@ export default class ArenaSlider extends Component<Attrs> {
     }
   }
 
-  /** First (or repeat) activation of this tab: enables the focus-triggered
-   *  soft-refresh listener (once) and loads/refreshes rows. */
   private activate() {
     if (!this.focusListenerEnabled && typeof window !== 'undefined') {
       this.focusListenerEnabled = true;
@@ -107,8 +87,6 @@ export default class ArenaSlider extends Component<Attrs> {
     }
   };
 
-  /** Only soft-refreshes while this tab is the one currently shown — mirrors
-   *  the original component's `if (this.activeTab === 'arena')` guard. */
   private handleFocus = () => {
     if (!this.attrs.active) return;
 
@@ -192,9 +170,6 @@ export default class ArenaSlider extends Component<Attrs> {
       this.loading = false;
       m.redraw();
 
-      // Same fix as RoleplaySlider.load(): fresh row data doesn't mean the
-      // User models are hydrated in a just-booted store. No-ops once
-      // everyone's loaded.
       await ensureUsersLoaded(this.rows.map((r) => r.user_id));
       m.redraw();
 
@@ -231,20 +206,11 @@ export default class ArenaSlider extends Component<Attrs> {
     await this.fetchFresh(true);
   }
 
-  /** Tag page URL for Arena's tag, built from the configurable arena tag
-   *  slug (admin settings) rather than a hardcoded domain+slug. Arena's tag
-   *  slug isn't Rolevaya's to own, so this is its own setting defaulting to
-   *  "arena" (the slug this forum actually uses). */
   private arenaTagUrl() {
     const slug = (app.forum.attribute('forumaker-rolevaya.arenaTagSlug') as string | undefined) || 'arena';
     return `${forumBaseUrl()}/t/${slug}`;
   }
 
-  /** Opening Arena's ChallengeModal cross-extension (even via a lazy
-   *  `import('ext:forumaker/arena/...')`) turned out unreliable in practice,
-   *  so this just links straight to the Арена tag page — the real "Бросить
-   *  вызов" button lives there, in Arena's own environment, with no
-   *  cross-extension runtime involved. */
   private renderArenaTagLink(className: string) {
     return (
       <a className={className} href={this.arenaTagUrl()}>
@@ -254,12 +220,6 @@ export default class ArenaSlider extends Component<Attrs> {
     );
   }
 
-  /** "Как играть" — same optional link Arena itself shows next to its
-   *  challenge button on the Арена tag page (see arenaButtons() in
-   *  addArenaTab.tsx), reusing the same admin-configured settings so this
-   *  button and that one always point to the same place. Renders nothing
-   *  if the admin hasn't set a URL (same "leave it blank to hide" rule as
-   *  the tag page). */
   private renderHowToPlayButton(className: string) {
     const howToPlayUrl = (app.forum.attribute('arenaHowToPlayUrl') as string | undefined) || '';
     if (!howToPlayUrl) return null;

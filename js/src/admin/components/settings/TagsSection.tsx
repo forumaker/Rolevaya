@@ -16,14 +16,6 @@ type Attrs = {
   onPickArena: (tag: any) => void;
 };
 
-/**
- * "Теги" section: which flarum/tags tag each part of the Зал Славы reads
- * from. Each field opens flarum/tags' own TagSelectionModal instead of a
- * free-text slug input, so the admin can't typo a slug that doesn't exist.
- *
- * Called directly as TagsSection(attrs), not used as a JSX tag — see
- * PerkPreviewCard.tsx for why.
- */
 export default function TagsSection(attrs: Attrs) {
   const {
     loaded,

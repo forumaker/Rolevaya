@@ -11,12 +11,6 @@ type Attrs = {
   onPick: (tag: any) => void;
 };
 
-/**
- * One "pick a single tag" field, used four times by TagsSection.
- *
- * Called directly as TagPickerField(attrs), not used as a JSX tag — see
- * PerkPreviewCard.tsx for why.
- */
 export default function TagPickerField(attrs: Attrs) {
   const { label, help, slug, tag, loaded, onPick } = attrs;
 
@@ -31,16 +25,6 @@ export default function TagPickerField(attrs: Attrs) {
           className="Button RolevayaTagPickerButton"
           type="button"
           onclick={() =>
-            // TagSelectionModal is a code-split (lazy-loaded) module in
-            // flarum/tags — the exact same import path is Flarum's own
-            // documented example of this
-            // (https://docs.flarum.org/2.x/extend/code-splitting#async-modals).
-            // A static top-level `import TagSelectionModal from 'ext:...'`
-            // always resolves to undefined for split modules (that chunk
-            // was never requested), which is what caused the
-            // "reading 'prototype' of undefined" crash here. app.modal.show
-            // accepts a callback returning the dynamic import() promise and
-            // shows the modal once it resolves.
             app.modal.show(() => import('ext:flarum/tags/common/components/TagSelectionModal'), {
               title: label,
               selectedTags: tag ? [tag] : [],

@@ -47,13 +47,7 @@ class ArcCompletionBackfill
                         continue;
                     }
 
-                    // Keyed by the same columns as the unique index, so a
-                    // repeated arc/user pair within this chunk overwrites
-                    // in-memory (last one wins, matching updateOrCreate()'s
-                    // prior behaviour) instead of appearing twice in a single
-                    // upsert() call — Postgres errors if ON CONFLICT hits the
-                    // same row twice within one statement.
-                    $key = $post->id . '|' . $arc['arc_title'] . '|' . $userId;
+                                                                                                                                            $key = $post->id . '|' . $arc['arc_title'] . '|' . $userId;
 
                     $rows[$key] = [
                         'source_post_id' => (int) $post->id,
@@ -70,13 +64,7 @@ class ArcCompletionBackfill
             }
 
             if ($rows) {
-                // One upsert per chunk (against the (source_post_id,
-                // arc_title, user_id) unique index) instead of one
-                // SELECT+INSERT/UPDATE per arc completion via
-                // updateOrCreate(). created_at/updated_at are set explicitly
-                // because upsert() bypasses Eloquent's automatic timestamp
-                // handling.
-                CompletedArc::query()->upsert(
+                                                                                                                CompletedArc::query()->upsert(
                     array_values($rows),
                     ['source_post_id', 'arc_title', 'user_id'],
                     ['discussion_id', 'experience', 'gold', 'parsed_at', 'updated_at']

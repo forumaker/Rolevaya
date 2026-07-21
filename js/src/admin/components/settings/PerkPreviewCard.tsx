@@ -2,17 +2,6 @@ import { renderMarkdownInline } from '../../../common/markdown';
 
 type Attrs = { label: string; icon: string; color: string; description: string };
 
-/**
- * Live preview of a perk card (Бонус Лучшего or a manual perk), as it would
- * render on the forum. Shared by BestBonusSection and ManualPerkGroupCard.
- *
- * This is a plain render helper, called directly as PerkPreviewCard(attrs) —
- * NOT used as a JSX tag (<PerkPreviewCard .../>). Mithril treats a function
- * passed as a JSX/m() tag as a closure component (called once, expected to
- * return {view: ...}), which breaks on the second redraw when the function
- * instead returns JSX directly. Calling it as a normal function sidesteps
- * that whole component-lifecycle machinery.
- */
 export default function PerkPreviewCard(attrs: Attrs) {
   const { label, icon, color, description } = attrs;
 

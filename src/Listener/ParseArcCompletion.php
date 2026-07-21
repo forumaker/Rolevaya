@@ -29,13 +29,7 @@ class ParseArcCompletion
             return;
         }
 
-        // Accessing the `tags` relation property (rather than `tags()->where(...)->exists()`)
-        // loads and caches the collection on the Discussion model. ParseCharacterSheet and
-        // ParseEpisodeCompletion listen on the same Post\Event\Saved and receive the same
-        // $post/$discussion instances, so whichever of the three listeners runs first pays
-        // for the query and the other two reuse the cached collection — one query instead
-        // of three per post save.
-        if (!$discussion->tags->contains('slug', $this->tags->role())) {
+                                                        if (!$discussion->tags->contains('slug', $this->tags->role())) {
             return;
         }
 
@@ -46,12 +40,7 @@ class ParseArcCompletion
 
         $now = now();
 
-        // Mirrors ArcCompletionBackfill::resolveUserId(): a single
-        // completion post can name several participants, and
-        // MentionedUserResolver::resolve() can issue up to 3 sequential
-        // queries per unique mention. Caching within this one post's
-        // participants avoids re-resolving the same name/mention twice.
-        $userIdCache = [];
+                                                $userIdCache = [];
 
         foreach ($arcs as $arc) {
             $userId = $this->resolveUserId($arc, $userIdCache);
@@ -59,13 +48,7 @@ class ParseArcCompletion
                 continue;
             }
 
-            // Match key must include user_id: a single completion post can
-            // name several participants under the same arc_title, and the
-            // table's unique index is (source_post_id, arc_title, user_id)
-            // — see migration 2026_06_07_000003_fix_completed_arcs_unique_index.
-            // Without user_id here, the second participant's row would
-            // overwrite the first instead of inserting alongside it.
-            CompletedArc::updateOrCreate(
+                                                                                    CompletedArc::updateOrCreate(
                 [
                     'source_post_id' => (int) $post->id,
                     'arc_title'      => $arc['arc_title'],

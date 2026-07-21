@@ -37,11 +37,6 @@ type ManualPerkGroup = {
   perks?: ManualPerkSetting[];
 };
 
-/**
- * "Персонажи" tab of the Зал Славы page. Split out of the old monolithic
- * StatsTabs.tsx so the characters leaderboard's data loading and rendering
- * can be understood without reading the activity/arena tabs too.
- */
 export default class CharactersTab extends Component {
   private readonly statIcons: Record<string, string> = {
     physiology:          'fa-solid fa-hand-fist',
@@ -55,12 +50,6 @@ export default class CharactersTab extends Component {
   excludeGuardians = false;
   sort: 'roleplay_experience' | 'sum' | 'physiology' | 'dexterity' | 'magic' | 'charisma' = 'roleplay_experience';
 
-  // Kept low on first load: each row's card needs its user hydrated via a
-  // separate /api/users/{id} request (see statsShared.ensureUsersLoaded),
-  // and with three tabs mounted at once those requests share one queue. A
-  // smaller initial page keeps the first-load request burst small; "Показать
-  // ещё" (loadMore) raises the limit and re-fetches only when the admin
-  // actually wants to see further down the board.
   limit = 24;
   private readonly pageSize = 24;
   private readonly maxLimit = 200;
@@ -70,11 +59,6 @@ export default class CharactersTab extends Component {
   error: string | null = null;
   rows: CharacterRow[] = [];
 
-  // Computed once instead of on every render: resolveCharacterPerks() used to call
-  // parseBestBonusSetting()/parseManualPerksMap() (each doing a JSON.parse) inside
-  // displayedRows.map(), so up to 200 rows meant hundreds of redundant parses per
-  // redraw. The underlying forum attributes are set once at boot and don't change
-  // without a full page reload (which re-runs oninit), so caching here is safe.
   private cachedBestBonus: BestBonusSetting = { enabled: false };
   private cachedManualPerksMap: Map<number, CardPerk[]> = new Map();
 
@@ -87,7 +71,6 @@ export default class CharactersTab extends Component {
     void this.load(true);
   }
 
-  /** Whether the shared "Обновить" button in the parent toolbar should spin/disable. */
   get isBusy() {
     return this.recalcLoading || this.loading;
   }
@@ -131,7 +114,6 @@ export default class CharactersTab extends Component {
     await this.load(true);
   }
 
-  /** Called by the parent's shared "Обновить" button when this tab is active. */
   async recalc() {
     this.recalcLoading = true;
     this.error = null;
@@ -289,8 +271,6 @@ export default class CharactersTab extends Component {
   }
 
   view() {
-    // exclude_guardians is sent to the server (see load), so this.rows
-    // already reflects the filter — no need to re-filter here.
     const displayedRows = this.rows;
 
     return (

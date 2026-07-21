@@ -15,19 +15,11 @@ import {
   userProfilePath,
 } from './statsShared';
 
-/**
- * "Ролевики" (activity) tab of the Зал Славы page. Split out of the old
- * monolithic StatsTabs.tsx so the activity leaderboard's data loading and
- * rendering can be understood without reading the characters/arena tabs
- * too.
- */
 export default class ActivityTab extends Component {
   excludeCurators = false;
   sort: 'posts_count' | 'avg_chars' | 'completed_arcs_count' | 'completed_episodes_count' = 'posts_count';
   minPosts = 0;
 
-  // See CharactersTab for why this starts low: each row needs a separate
-  // user hydration request, shared across all three leaderboard tabs.
   limit = 24;
   private readonly pageSize = 24;
   private readonly maxLimit = 200;
@@ -87,11 +79,6 @@ export default class ActivityTab extends Component {
     await this.load(true);
   }
 
-  /**
-   * Called by the parent's shared "Обновить" button when this tab is
-   * active. Recalculates activity, completed arcs, and completed episodes
-   * together since they're all shown on this tab.
-   */
   async recalc() {
     this.recalcLoading = true;
     this.error = null;
@@ -161,8 +148,6 @@ export default class ActivityTab extends Component {
   }
 
   view() {
-    // exclude_curators is sent to the server (see load), so this.rows
-    // already reflects the filter.
     const displayedRows = this.rows;
 
     return (

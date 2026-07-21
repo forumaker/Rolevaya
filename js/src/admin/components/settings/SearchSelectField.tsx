@@ -23,11 +23,6 @@ type DropdownAttrs = {
   onSelectItem: (id: string) => void;
 };
 
-/**
- * Presentational suggestions list, built on Flarum's own AutocompleteDropdown
- * (flarum/common/components/AutocompleteDropdown) — the same base class core
- * uses for its own search-as-you-type dropdowns — instead of a bespoke one.
- */
 class ResultsDropdown extends AutocompleteDropdown<DropdownAttrs> {
   suggestions(): Mithril.Vnode<any, any>[] {
     const { items, loading, query, minChars } = this.attrs;
@@ -70,12 +65,6 @@ type FieldAttrs = {
   onRemove: (id: number) => void;
 };
 
-/**
- * Search-as-you-type input with a chip list underneath. Used for both
- * "ID Хранителей" (search() looks up character discussions) and
- * "ID Кураторов" (search() looks up users) — see GuardianCharacterField and
- * CuratorUserField.
- */
 export default class SearchSelectField extends Component<FieldAttrs> {
   private query = '';
   private results: SearchSelectItem[] = [];

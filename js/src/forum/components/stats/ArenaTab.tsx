@@ -13,16 +13,9 @@ import {
   userProfilePath,
 } from './statsShared';
 
-/**
- * "Арена" tab of the Зал Славы page. Split out of the old monolithic
- * StatsTabs.tsx so the arena leaderboard's data loading and rendering can
- * be understood without reading the characters/activity tabs too.
- */
 export default class ArenaTab extends Component {
   sort: 'wins' | 'winrate' | 'losses' | 'draws' = 'wins';
 
-  // See CharactersTab for why this starts low: each row needs a separate
-  // user hydration request, shared across all three leaderboard tabs.
   limit = 24;
   private readonly pageSize = 24;
   private readonly maxLimit = 200;
@@ -68,11 +61,6 @@ export default class ArenaTab extends Component {
     }
   }
 
-  /**
-   * Called by the parent's shared "Обновить" button when this tab is
-   * active. Arena's own stats are updated live as battles resolve — there's
-   * no recalculation job to trigger here, just a fresh read.
-   */
   async recalc() {
     await this.load(true);
   }

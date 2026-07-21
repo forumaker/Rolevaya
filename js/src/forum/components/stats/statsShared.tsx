@@ -2,11 +2,6 @@ import app from 'flarum/forum/app';
 import User from 'flarum/common/models/User';
 import Link from 'flarum/common/components/Link';
 
-/**
- * Types and helpers shared by CharactersTab/ActivityTab/ArenaTab. Split out
- * of the old single 999-line StatsTabs.tsx so each tab can be read and
- * changed in isolation.
- */
 
 export type CharacterRow = {
   discussion_id: number;
@@ -156,18 +151,8 @@ export function rankClass(i: number) {
   return 'RolevayaRank ' + (suffix ? `RolevayaRank--${suffix}` : '');
 }
 
-// Shared across all three tabs so the same user isn't fetched twice just
-// because they show up on e.g. both the activity and arena leaderboards.
 const ensuredUserIds = new Set<number>();
 
-// IDs that have been requested but not yet fetched. When StatsTabs mounts all
-// three tabs at once, each calls ensureUsersLoaded() as soon as its own data
-// loads; a plain boolean "inflight" guard used to make the second/third call
-// bail out immediately, dropping any user IDs unique to those tabs. Now every
-// call merges its IDs into this pending set, and whichever call is already
-// running drains the set in a loop until it's empty — so IDs added while a
-// fetch is in progress still get picked up before the run finishes, instead
-// of being silently skipped.
 const pendingUserIds = new Set<number>();
 let inflightRun: Promise<void> | null = null;
 
@@ -185,38 +170,8 @@ export async function ensureUsersLoaded(userIds: number[]) {
 
   inflightRun = (async () => {
     try {
-      // Flarum's /api/users list endpoint has no real "id" filter gambit, so
-      // filter:{id:...} silently returns an ambient default listing instead
-      // of the requested users. Per-ID singular fetches (app.store.find) are
-      // what Flarum actually supports for arbitrary IDs, and — importantly —
-      // they go through Flarum's real serializer pipeline, so every other
-      // installed extension's attribute contributions (e.g. Point System's
-      // avatar-frame data) are present on the resulting User model.
-      //
-      // A previous version of this function called a hand-rolled
-      // /rolevaya/users batch endpoint instead, to cut this down to one
-      // request per (up to 200-id) batch. That backend endpoint had two
-      // problems in production: it depended on Flarum 1.x API classes that
-      // no longer exist in Flarum 2.x (500 error), and once rewritten to
-      // avoid those, it could only emit the handful of attributes this
-      // extension itself knows about — losing every other extension's
-      // (e.g. Point System's) attribute contributions, which broke avatar
-      // frames and profile links. Round-tripping through Flarum's own
-      // /api/users/{id} endpoint per user is slower but is guaranteed to
-      // produce fully correct, fully decorated User models.
-      //
-      // Leaderboards here can list up to 50 rows, so firing 50 requests at
-      // once (Promise.all over the whole list) would overwhelm the browser's
-      // per-origin connection limit and the server. Fetching in small
-      // concurrent batches, with a redraw after each, keeps things reliable
-      // while showing frames progressively instead of all-or-nothing at the
-      // end.
       const concurrency = 4;
 
-      // Re-check pendingUserIds.size on every iteration (not just once up
-      // front): a concurrent tab's ensureUsersLoaded() call can add more IDs
-      // to the set while this loop is awaiting a batch, and those need to be
-      // drained too before this run finishes.
       while (pendingUserIds.size) {
         const batch = Array.from(pendingUserIds).slice(0, 200);
         batch.forEach((id) => {

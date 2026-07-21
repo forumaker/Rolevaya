@@ -47,13 +47,7 @@ class EpisodeCompletionBackfill
                         continue;
                     }
 
-                    // Keyed by the same columns as the unique index, so a
-                    // repeated user within this chunk overwrites in-memory
-                    // (last one wins, matching updateOrCreate()'s prior
-                    // behaviour) instead of appearing twice in a single
-                    // upsert() call — Postgres errors if ON CONFLICT hits
-                    // the same row twice within one statement.
-                    $key = $post->id . '|' . $userId;
+                                                                                                                                            $key = $post->id . '|' . $userId;
 
                     $rows[$key] = [
                         'source_post_id' => (int) $post->id,
@@ -67,12 +61,7 @@ class EpisodeCompletionBackfill
             }
 
             if ($rows) {
-                // One upsert per chunk (against the (source_post_id,
-                // user_id) unique index) instead of one SELECT+INSERT/UPDATE
-                // per episode completion via updateOrCreate().
-                // created_at/updated_at are set explicitly because upsert()
-                // bypasses Eloquent's automatic timestamp handling.
-                CompletedEpisode::query()->upsert(
+                                                                                                CompletedEpisode::query()->upsert(
                     array_values($rows),
                     ['source_post_id', 'user_id'],
                     ['discussion_id', 'parsed_at', 'updated_at']

@@ -4,20 +4,6 @@ import CharactersTab from './stats/CharactersTab';
 import ActivityTab from './stats/ActivityTab';
 import ArenaTab from './stats/ArenaTab';
 
-/**
- * Зал Славы tab switcher. Each tab (characters/activity/arena) used to be a
- * ~330-line slice of a single 999-line component with all three tabs'
- * loading state, error state, and render methods mixed together. They're
- * now separate Component subclasses (see ./stats/*) that can be read and
- * changed in isolation; this component only owns which tab is active and
- * the shared toolbar (tab buttons + the single "Обновить" button, which
- * delegates to whichever tab is currently active).
- *
- * All three tabs are mounted at once (just hidden via CSS when inactive)
- * rather than created on demand, so switching tabs is instant and doesn't
- * re-fetch data that's already loaded — matching the original component's
- * behavior of preloading all three leaderboards up front.
- */
 export default class StatsTabs extends Component {
   activeTab: 'characters' | 'activity' | 'arena' = 'characters';
 
@@ -89,11 +75,6 @@ export default class StatsTabs extends Component {
               Арена
             </button>
 
-            {/* The backend already rejects these recalculate requests with a
-                403 for actors lacking the permission (see
-                assertPermission('forumaker-rolevaya.recalculate') in the
-                Recalculate* controllers) — this just avoids showing a
-                button to visitors that can only ever fail for them. */}
             {app.forum.attribute('canRecalculateRolevaya') && (
               <button
                 className="Button RolevayaRefreshBtn"

@@ -14,12 +14,6 @@ type Attrs = {
   onUpdatePerk: (perkIndex: number, field: keyof ManualPerk, value: any) => void;
 };
 
-/**
- * One "discussion → its perks" card inside the Дары section.
- *
- * Called directly as ManualPerkGroupCard(attrs), not used as a JSX tag —
- * see PerkPreviewCard.tsx for why.
- */
 export default function ManualPerkGroupCard(attrs: Attrs) {
   const { key, group, title, collapsed, onToggleCollapse, onAddPerk, onRemoveGroup, onRemovePerk, onUpdatePerk } = attrs;
 

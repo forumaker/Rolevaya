@@ -4,13 +4,6 @@ namespace forumaker\Rolevaya;
 
 use Flarum\Settings\SettingsRepositoryInterface;
 
-/**
- * Resolves the slugs of the tags used to scope roleplay tracking (arcs,
- * episodes, character sheets). Configurable via admin settings
- * (forumaker-rolevaya.tagCharacters/.tagRole/.tagEpisodes) so a forum whose
- * tagging taxonomy differs from the defaults below doesn't silently end up
- * with an empty leaderboard.
- */
 class RoleplayTags
 {
     public const DEFAULT_CHARACTERS = 'characters';

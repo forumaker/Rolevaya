@@ -16,12 +16,6 @@ type Attrs = {
   onUpdate: (field: keyof BestBonusSetting, value: any) => void;
 };
 
-/**
- * "Бонус Лучшего" collapsible card. Split out of RolevayaSettingsPage.content().
- *
- * Called directly as BestBonusSection(attrs) from RolevayaSettingsPage, not
- * used as a JSX tag — see PerkPreviewCard.tsx for why.
- */
 export default function BestBonusSection(attrs: Attrs) {
   const { bestBonus, collapsed, onToggleCollapse, onUpdate } = attrs;
 

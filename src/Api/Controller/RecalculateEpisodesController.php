@@ -21,12 +21,7 @@ class RecalculateEpisodesController implements RequestHandlerInterface
         $actor = RequestUtil::getActor($request);
         $actor->assertPermission('forumaker-rolevaya.recalculate');
 
-        // Scanning every episode discussion can take a while on a large
-        // forum, so this is queued rather than run synchronously inside the
-        // HTTP request (see RecalculateEpisodesJob). With the default
-        // "sync" queue driver this still runs immediately; with a database
-        // or Redis driver configured it's picked up by the queue worker.
-        $this->queue->push(new RecalculateEpisodesJob());
+                                                $this->queue->push(new RecalculateEpisodesJob());
 
         return new JsonResponse([
             'ok' => true,

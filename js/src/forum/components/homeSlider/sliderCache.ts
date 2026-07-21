@@ -10,18 +10,6 @@ export type CachePayload<T> = {
   rows: T[];
 };
 
-/**
- * sessionStorage-backed cache plus an in-memory mirror for one
- * HomepageActivitySlider tab (roleplay or arena). Extracted out of the old
- * monolithic HomepageActivitySlider.tsx so the caching/staleness concern can
- * be read and changed without wading through carousel or rendering code too.
- *
- * Each tab creates exactly ONE instance of this class at module scope (not
- * inside a component's oninit()) so that data survives the
- * RoleplaySlider/ArenaSlider component instance being unmounted and
- * remounted — e.g. navigating away from the homepage and back — the same
- * way the original sharedState/arenaSharedState module-level objects did.
- */
 export class SliderCache<T> {
   rows: T[] = [];
   ts = 0;
@@ -70,9 +58,6 @@ export class SliderCache<T> {
     } catch {}
   }
 
-  /** Resets both the sessionStorage cache and the in-memory mirror — used
-   *  when something external (e.g. a recalculation elsewhere on the page)
-   *  makes the cached rows stale. */
   invalidate() {
     this.clearCache();
     this.rows = [];
@@ -82,13 +67,6 @@ export class SliderCache<T> {
   }
 }
 
-/**
- * Row-equality check shared by both tabs' "did anything actually change"
- * comparison before swapping in freshly-fetched rows (avoids an unnecessary
- * carousel re-clamp/redraw when a background refetch comes back identical).
- * Identity fields (user_id/nickname/username/avatar_url) are common to both
- * row shapes; each tab supplies its own comparison for its own stat fields.
- */
 export function rowsEqual<T extends RowIdentity>(a: T[], b: T[], statsEqual: (x: T, y: T) => boolean): boolean {
   if (a.length !== b.length) return false;
 

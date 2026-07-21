@@ -9,20 +9,6 @@ type Attrs = {
   onRemove: (id: number) => void;
 };
 
-/**
- * "ID Хранителей" field: search character-sheet discussions by title
- * (scoped to the configured "characters" tag via flarum/tags' own `tag:`
- * search gambit) instead of typing a raw discussion ID.
- *
- * Guardians are tracked by discussion, not by user (a player can have
- * several character sheets, only some of which should be excluded from the
- * leaderboard) — see the discussion with Arseny that settled this. Search
- * results therefore show the character/anketa name, not a username.
- *
- * Called directly as GuardianCharacterField(attrs), not used as a JSX tag —
- * see PerkPreviewCard.tsx for why. The SearchSelectField it renders IS a
- * real Flarum Component (class-based), so that one stays as a JSX tag.
- */
 export default function GuardianCharacterField(attrs: Attrs) {
   const { tagSlug, ids, titles, onAdd, onRemove } = attrs;
 

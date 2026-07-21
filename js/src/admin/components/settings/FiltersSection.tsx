@@ -3,10 +3,6 @@ import GuardianCharacterField from './GuardianCharacterField';
 import CuratorUserField from './CuratorUserField';
 
 type Attrs = {
-  // True until every guardian discussion title / curator username has
-  // been fetched at least once — see RolevayaSettingsPage.oninit. Used to
-  // show a loading indicator instead of the pickers, so a page reload
-  // doesn't flash raw "#id…" chip labels before swapping in real titles.
   loading: boolean;
   tagCharacters: string;
   guardianDiscussionIds: number[];
@@ -28,12 +24,6 @@ type Attrs = {
   onActivityPeriodDaysCommit: () => void;
 };
 
-/**
- * "Игроки и ID" section: leaderboard exclusion filters.
- *
- * Called directly as FiltersSection(attrs), not used as a JSX tag — see
- * PerkPreviewCard.tsx for why.
- */
 export default function FiltersSection(attrs: Attrs) {
   const {
     loading,

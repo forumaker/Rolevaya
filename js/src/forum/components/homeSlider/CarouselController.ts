@@ -1,14 +1,3 @@
-/**
- * Index/visible-count/swipe-touch bookkeeping for one carousel "lane" (the
- * Ролевая or Арена tab of HomepageActivitySlider). Extracted out of the old
- * monolithic HomepageActivitySlider.tsx so this presentation-only concern
- * can be read and changed in isolation.
- *
- * Deliberately knows nothing about what rows *are* — callers pass the
- * current row count into clamp()/prev()/next() rather than this class
- * holding a reference to the row array itself, so it stays reusable for any
- * row shape.
- */
 export class CarouselController {
   index = 0;
   visibleCount = 3;
@@ -26,7 +15,6 @@ export class CarouselController {
     this.visibleCount = window.innerWidth <= 768 ? 1 : 3;
   }
 
-  /** Keeps `index` in range after the row count or visibleCount changes. */
   clamp(rowCount: number) {
     if (!rowCount) {
       this.index = 0;
@@ -64,12 +52,6 @@ export class CarouselController {
     this.touchCurrentX = event.touches[0].clientX;
   };
 
-  /**
-   * Resolves a finished touch gesture into a direction (or null if it
-   * didn't cross the swipe threshold). Returns the direction rather than
-   * calling prev()/next() itself since those need the caller's current row
-   * count, which this class doesn't hold.
-   */
   resolveTouchEnd(): 'prev' | 'next' | null {
     if (this.touchStartX === null || this.touchCurrentX === null) {
       this.touchStartX = null;

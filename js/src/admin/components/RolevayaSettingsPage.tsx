@@ -10,12 +10,6 @@ import type { ManualPerk, ManualPerkGroup } from './settings/types';
 
 type TagKind = 'characters' | 'role' | 'episodes' | 'arena';
 
-/**
- * Admin settings page for the Rolevaya extension. Each section's markup
- * lives in its own file under ./settings/ — this class is left holding the
- * page's state and the mutation methods those sections call back into,
- * which is what content() composes on every redraw.
- */
 export default class RolevayaSettingsPage extends ExtensionPage {
   bestBonus: BestBonusSetting = {
     enabled: true,
@@ -36,11 +30,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
   curatorUserIds: number[] = [];
   curatorUsernames: Record<number, string> = {};
 
-  // True until every guardian discussion title / curator username has been
-  // fetched at least once. FiltersSection uses this to show a loading
-  // indicator instead of the "#id…" fallback chip label, so the page
-  // doesn't flash raw IDs before swapping in the real titles/names on
-  // every reload.
   filtersLoading = true;
 
   excludeCharacterDiscussionIdsText = '';
@@ -94,20 +83,10 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     return 'RolevayaAdmin';
   }
 
-  // --- lookups -------------------------------------------------------
 
   private fetchDiscussionTitle(id: number): Promise<void> {
     if (this.discussionTitles[id]) return Promise.resolve();
 
-    // Raw app.request() instead of app.store.find(): some other installed
-    // extension (an SEO extension, by the look of it) attaches a `seoMeta`
-    // relationship to the discussions resource by default. Flarum's admin
-    // app Store has no model registered for that type, so pushing the
-    // response through app.store.find()/pushPayload() throws "Pushing
-    // object of type `seoMeta` not allowed" on every load — harmless (the
-    // title still came through) but it floods the console. Reading
-    // .attributes.title straight off the raw response never touches the
-    // Store, so there's nothing for it to reject.
     return app
       .request<any>({
         method: 'GET',
@@ -142,8 +121,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     const tagList = (app as any).tagList;
 
     if (!tagList) {
-      // flarum/tags isn't booted in this admin session for some reason —
-      // fall back to showing raw slugs rather than blocking the page.
       this.tagsLoaded = true;
       return;
     }
@@ -164,7 +141,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
       });
   }
 
-  // --- setting (de)serialization -------------------------------------
 
   private parseBestBonusSetting(raw: string | null | undefined): BestBonusSetting {
     const fallback: BestBonusSetting = {
@@ -222,7 +198,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     }
   }
 
-  /** Only still used for excludeCharacterDiscussionIds, which stays a free-text comma list. */
   private parseIdListSettingText(key: string): string {
     const raw = this.setting(key)();
     if (!raw) return '';
@@ -269,7 +244,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     m.redraw();
   }
 
-  // --- Бонус Лучшего ---------------------------------------------------
 
   private syncBestBonusSetting() {
     this.setting('forumaker-rolevaya.bestBonus')(JSON.stringify(this.bestBonus, null, 2));
@@ -281,7 +255,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     m.redraw();
   }
 
-  // --- Дары (manual perks) --------------------------------------------
 
   private syncManualPerksSetting() {
     this.setting('forumaker-rolevaya.manualPerks')(JSON.stringify(this.manualPerkGroups, null, 2));
@@ -369,7 +342,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     m.redraw();
   }
 
-  // --- Теги (tag picker) ------------------------------------------------
 
   private pickTag(kind: TagKind, tag: any) {
     const slug = tag?.slug?.();
@@ -396,7 +368,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     m.redraw();
   }
 
-  // --- Игроки и ID (guardians / curators) ------------------------------
 
   private addGuardianDiscussion(id: number, title: string) {
     if (!id || this.guardianDiscussionIds.includes(id)) return;
@@ -428,7 +399,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     m.redraw();
   }
 
-  // --- render ------------------------------------------------------------
 
   content() {
     return (
@@ -444,12 +414,6 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     );
   }
 
-  // Every section below is a plain function called directly (Foo(attrs)),
-  // never used as a JSX tag (<Foo .../>). Mithril treats a function passed
-  // to m()/JSX as a closure component — called once, expected to return
-  // {view: ...} — which breaks on the second redraw when the function
-  // returns JSX directly instead. Calling them as normal functions avoids
-  // that whole component-lifecycle mismatch.
 
   private renderBestBonus() {
     return BestBonusSection({
