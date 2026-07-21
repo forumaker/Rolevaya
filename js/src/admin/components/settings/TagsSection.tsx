@@ -21,10 +21,10 @@ type Attrs = {
  * from. Each field opens flarum/tags' own TagSelectionModal instead of a
  * free-text slug input, so the admin can't typo a slug that doesn't exist.
  *
- * Mithril calls plain-function components with the vnode (props at
- * vnode.attrs), not with attrs directly, so props are read from `attrs`.
+ * Called directly as TagsSection(attrs), not used as a JSX tag — see
+ * PerkPreviewCard.tsx for why.
  */
-export default function TagsSection({ attrs }: { attrs: Attrs }) {
+export default function TagsSection(attrs: Attrs) {
   const {
     loaded,
     tagCharacters,
@@ -43,20 +43,20 @@ export default function TagsSection({ attrs }: { attrs: Attrs }) {
 
   return (
     <div className="RolevayaAdminPanel">
-      <TagPickerField label="Тег анкет" slug={tagCharacters} tag={tagCharactersTag} loaded={loaded} onPick={onPickCharacters} />
+      {TagPickerField({ label: 'Тег анкет', slug: tagCharacters, tag: tagCharactersTag, loaded, onPick: onPickCharacters })}
 
-      <TagPickerField label="Тег ролевых тем" slug={tagRole} tag={tagRoleTag} loaded={loaded} onPick={onPickRole} />
+      {TagPickerField({ label: 'Тег ролевых тем', slug: tagRole, tag: tagRoleTag, loaded, onPick: onPickRole })}
 
-      <TagPickerField label="Тег эпизодов" slug={tagEpisodes} tag={tagEpisodesTag} loaded={loaded} onPick={onPickEpisodes} />
+      {TagPickerField({ label: 'Тег эпизодов', slug: tagEpisodes, tag: tagEpisodesTag, loaded, onPick: onPickEpisodes })}
 
-      <TagPickerField
-        label="Тег арены"
-        help="Используется для ссылки «На Арену» в виджете на главной"
-        slug={arenaTagSlug}
-        tag={arenaTag}
-        loaded={loaded}
-        onPick={onPickArena}
-      />
+      {TagPickerField({
+        label: 'Тег арены',
+        help: 'Используется для ссылки «На Арену» в виджете на главной',
+        slug: arenaTagSlug,
+        tag: arenaTag,
+        loaded,
+        onPick: onPickArena,
+      })}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import PerkPreviewCard from './PerkPreviewCard';
 import type { ManualPerk, ManualPerkGroup } from './types';
 
 type Attrs = {
+  key?: string;
   group: ManualPerkGroup;
   title: string;
   collapsed: boolean;
@@ -16,14 +17,14 @@ type Attrs = {
 /**
  * One "discussion → its perks" card inside the Дары section.
  *
- * Mithril calls plain-function components with the vnode (props at
- * vnode.attrs), not with attrs directly, so props are read from `attrs`.
+ * Called directly as ManualPerkGroupCard(attrs), not used as a JSX tag —
+ * see PerkPreviewCard.tsx for why.
  */
-export default function ManualPerkGroupCard({ attrs }: { attrs: Attrs }) {
-  const { group, title, collapsed, onToggleCollapse, onAddPerk, onRemoveGroup, onRemovePerk, onUpdatePerk } = attrs;
+export default function ManualPerkGroupCard(attrs: Attrs) {
+  const { key, group, title, collapsed, onToggleCollapse, onAddPerk, onRemoveGroup, onRemovePerk, onUpdatePerk } = attrs;
 
   return (
-    <div className={'RolevayaGroupCard' + (collapsed ? ' is-collapsed' : '')}>
+    <div key={key} className={'RolevayaGroupCard' + (collapsed ? ' is-collapsed' : '')}>
       <div className="RolevayaGroupCard-header">
         <button
           className="RolevayaGroupCard-toggle"
@@ -114,7 +115,7 @@ export default function ManualPerkGroupCard({ attrs }: { attrs: Attrs }) {
                   </div>
 
                   <div className="RolevayaAdminAside">
-                    <PerkPreviewCard label={perk.label} icon={perk.icon} color={perk.color} description={perk.description} />
+                    {PerkPreviewCard({ label: perk.label, icon: perk.icon, color: perk.color, description: perk.description })}
                   </div>
                 </div>
               </div>

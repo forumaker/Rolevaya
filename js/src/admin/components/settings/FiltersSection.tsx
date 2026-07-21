@@ -25,10 +25,10 @@ type Attrs = {
 /**
  * "Игроки и ID" section: leaderboard exclusion filters.
  *
- * Mithril calls plain-function components with the vnode (props at
- * vnode.attrs), not with attrs directly, so props are read from `attrs`.
+ * Called directly as FiltersSection(attrs), not used as a JSX tag — see
+ * PerkPreviewCard.tsx for why.
  */
-export default function FiltersSection({ attrs }: { attrs: Attrs }) {
+export default function FiltersSection(attrs: Attrs) {
   const {
     tagCharacters,
     guardianDiscussionIds,
@@ -51,19 +51,19 @@ export default function FiltersSection({ attrs }: { attrs: Attrs }) {
     <div className="RolevayaAdminPanel">
       <div className="Form-group">
         <label>ID Хранителей</label>
-        <GuardianCharacterField
-          tagSlug={tagCharacters}
-          ids={guardianDiscussionIds}
-          titles={guardianTitles}
-          onAdd={onAddGuardian}
-          onRemove={onRemoveGuardian}
-        />
+        {GuardianCharacterField({
+          tagSlug: tagCharacters,
+          ids: guardianDiscussionIds,
+          titles: guardianTitles,
+          onAdd: onAddGuardian,
+          onRemove: onRemoveGuardian,
+        })}
         <p className="helpText">Найдите анкету по названию и выберите её — можно добавить несколько.</p>
       </div>
 
       <div className="Form-group">
         <label>ID Кураторов</label>
-        <CuratorUserField ids={curatorUserIds} usernames={curatorUsernames} onAdd={onAddCurator} onRemove={onRemoveCurator} />
+        {CuratorUserField({ ids: curatorUserIds, usernames: curatorUsernames, onAdd: onAddCurator, onRemove: onRemoveCurator })}
         <p className="helpText">Найдите пользователя по имени и выберите его — можно добавить несколько.</p>
       </div>
 

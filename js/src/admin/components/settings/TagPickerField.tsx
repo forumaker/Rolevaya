@@ -20,10 +20,10 @@ type Attrs = {
 /**
  * One "pick a single tag" field, used four times by TagsSection.
  *
- * Mithril calls plain-function components with the vnode (props at
- * vnode.attrs), not with attrs directly, so props are read from `attrs`.
+ * Called directly as TagPickerField(attrs), not used as a JSX tag — see
+ * PerkPreviewCard.tsx for why.
  */
-export default function TagPickerField({ attrs }: { attrs: Attrs }) {
+export default function TagPickerField(attrs: Attrs) {
   const { label, help, slug, tag, loaded, onPick } = attrs;
 
   return (

@@ -19,10 +19,10 @@ type Attrs = {
 /**
  * "Дары" section: add a discussion, then attach one or more perk cards to it.
  *
- * Mithril calls plain-function components with the vnode (props at
- * vnode.attrs), not with attrs directly, so props are read from `attrs`.
+ * Called directly as ManualPerksSection(attrs), not used as a JSX tag —
+ * see PerkPreviewCard.tsx for why.
  */
-export default function ManualPerksSection({ attrs }: { attrs: Attrs }) {
+export default function ManualPerksSection(attrs: Attrs) {
   const {
     groups,
     collapsedGroups,
@@ -77,19 +77,19 @@ export default function ManualPerksSection({ attrs }: { attrs: Attrs }) {
         </div>
       ) : null}
 
-      {groups.map((group, groupIndex) => (
-        <ManualPerkGroupCard
-          key={`group-${group.discussion_id}`}
-          group={group}
-          title={discussionTitles[group.discussion_id] ?? `#${group.discussion_id}…`}
-          collapsed={collapsedGroups[group.discussion_id] !== false}
-          onToggleCollapse={() => onToggleGroup(group.discussion_id)}
-          onAddPerk={() => onAddPerk(groupIndex)}
-          onRemoveGroup={() => onRemoveGroup(groupIndex)}
-          onRemovePerk={(perkIndex) => onRemovePerk(groupIndex, perkIndex)}
-          onUpdatePerk={(perkIndex, field, value) => onUpdatePerk(groupIndex, perkIndex, field, value)}
-        />
-      ))}
+      {groups.map((group, groupIndex) =>
+        ManualPerkGroupCard({
+          key: `group-${group.discussion_id}`,
+          group,
+          title: discussionTitles[group.discussion_id] ?? `#${group.discussion_id}…`,
+          collapsed: collapsedGroups[group.discussion_id] !== false,
+          onToggleCollapse: () => onToggleGroup(group.discussion_id),
+          onAddPerk: () => onAddPerk(groupIndex),
+          onRemoveGroup: () => onRemoveGroup(groupIndex),
+          onRemovePerk: (perkIndex) => onRemovePerk(groupIndex, perkIndex),
+          onUpdatePerk: (perkIndex, field, value) => onUpdatePerk(groupIndex, perkIndex, field, value),
+        })
+      )}
     </div>
   );
 }

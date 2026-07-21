@@ -19,12 +19,10 @@ type Attrs = {
 /**
  * "Бонус Лучшего" collapsible card. Split out of RolevayaSettingsPage.content().
  *
- * Mithril calls plain-function components with the whole vnode as the
- * argument (props live at vnode.attrs), not with attrs directly — unlike
- * React. So the props are destructured from `attrs` here, not from the
- * function parameter itself.
+ * Called directly as BestBonusSection(attrs) from RolevayaSettingsPage, not
+ * used as a JSX tag — see PerkPreviewCard.tsx for why.
  */
-export default function BestBonusSection({ attrs }: { attrs: Attrs }) {
+export default function BestBonusSection(attrs: Attrs) {
   const { bestBonus, collapsed, onToggleCollapse, onUpdate } = attrs;
 
   return (
@@ -100,7 +98,7 @@ export default function BestBonusSection({ attrs }: { attrs: Attrs }) {
           </div>
 
           <div className="RolevayaAdminAside">
-            <PerkPreviewCard label={bestBonus.label} icon={bestBonus.icon} color={bestBonus.color} description={bestBonus.description} />
+            {PerkPreviewCard({ label: bestBonus.label, icon: bestBonus.icon, color: bestBonus.color, description: bestBonus.description })}
           </div>
         </div>
       )}

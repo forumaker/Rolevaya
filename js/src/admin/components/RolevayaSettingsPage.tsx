@@ -420,18 +420,23 @@ export default class RolevayaSettingsPage extends ExtensionPage {
     );
   }
 
+  // Every section below is a plain function called directly (Foo(attrs)),
+  // never used as a JSX tag (<Foo .../>). Mithril treats a function passed
+  // to m()/JSX as a closure component — called once, expected to return
+  // {view: ...} — which breaks on the second redraw when the function
+  // returns JSX directly instead. Calling them as normal functions avoids
+  // that whole component-lifecycle mismatch.
+
   private renderBestBonus() {
-    return (
-      <BestBonusSection
-        bestBonus={this.bestBonus}
-        collapsed={this.bestBonusCollapsed}
-        onToggleCollapse={() => {
-          this.bestBonusCollapsed = !this.bestBonusCollapsed;
-          m.redraw();
-        }}
-        onUpdate={(field, value) => this.updateBestBonus(field, value)}
-      />
-    );
+    return BestBonusSection({
+      bestBonus: this.bestBonus,
+      collapsed: this.bestBonusCollapsed,
+      onToggleCollapse: () => {
+        this.bestBonusCollapsed = !this.bestBonusCollapsed;
+        m.redraw();
+      },
+      onUpdate: (field, value) => this.updateBestBonus(field, value),
+    });
   }
 
   private renderManualPerks() {
@@ -439,21 +444,21 @@ export default class RolevayaSettingsPage extends ExtensionPage {
       'fas fa-wand-sparkles',
       'Дары',
       'Ручные перки для конкретных анкет',
-      <ManualPerksSection
-        groups={this.manualPerkGroups}
-        collapsedGroups={this.collapsedGroups}
-        discussionTitles={this.discussionTitles}
-        newDiscussionId={this.newDiscussionId}
-        onNewDiscussionIdChange={(value) => {
+      ManualPerksSection({
+        groups: this.manualPerkGroups,
+        collapsedGroups: this.collapsedGroups,
+        discussionTitles: this.discussionTitles,
+        newDiscussionId: this.newDiscussionId,
+        onNewDiscussionIdChange: (value) => {
           this.newDiscussionId = value;
-        }}
-        onAddGroup={() => this.addDiscussionGroup()}
-        onToggleGroup={(id) => this.toggleGroup(id)}
-        onAddPerk={(groupIndex) => this.addPerkToGroup(groupIndex)}
-        onRemoveGroup={(groupIndex) => this.removeDiscussionGroup(groupIndex)}
-        onRemovePerk={(groupIndex, perkIndex) => this.removeManualPerk(groupIndex, perkIndex)}
-        onUpdatePerk={(groupIndex, perkIndex, field, value) => this.updateManualPerk(groupIndex, perkIndex, field, value)}
-      />
+        },
+        onAddGroup: () => this.addDiscussionGroup(),
+        onToggleGroup: (id) => this.toggleGroup(id),
+        onAddPerk: (groupIndex) => this.addPerkToGroup(groupIndex),
+        onRemoveGroup: (groupIndex) => this.removeDiscussionGroup(groupIndex),
+        onRemovePerk: (groupIndex, perkIndex) => this.removeManualPerk(groupIndex, perkIndex),
+        onUpdatePerk: (groupIndex, perkIndex, field, value) => this.updateManualPerk(groupIndex, perkIndex, field, value),
+      })
     );
   }
 
@@ -462,21 +467,21 @@ export default class RolevayaSettingsPage extends ExtensionPage {
       'fas fa-tags',
       'Теги',
       'Откуда Зал Славы собирает статистику',
-      <TagsSection
-        loaded={this.tagsLoaded}
-        tagCharacters={this.tagCharacters}
-        tagCharactersTag={this.tagCharactersTag}
-        tagRole={this.tagRole}
-        tagRoleTag={this.tagRoleTag}
-        tagEpisodes={this.tagEpisodes}
-        tagEpisodesTag={this.tagEpisodesTag}
-        arenaTagSlug={this.arenaTagSlug}
-        arenaTag={this.arenaTagSlugTag}
-        onPickCharacters={(tag) => this.pickTag('characters', tag)}
-        onPickRole={(tag) => this.pickTag('role', tag)}
-        onPickEpisodes={(tag) => this.pickTag('episodes', tag)}
-        onPickArena={(tag) => this.pickTag('arena', tag)}
-      />
+      TagsSection({
+        loaded: this.tagsLoaded,
+        tagCharacters: this.tagCharacters,
+        tagCharactersTag: this.tagCharactersTag,
+        tagRole: this.tagRole,
+        tagRoleTag: this.tagRoleTag,
+        tagEpisodes: this.tagEpisodes,
+        tagEpisodesTag: this.tagEpisodesTag,
+        arenaTagSlug: this.arenaTagSlug,
+        arenaTag: this.arenaTagSlugTag,
+        onPickCharacters: (tag) => this.pickTag('characters', tag),
+        onPickRole: (tag) => this.pickTag('role', tag),
+        onPickEpisodes: (tag) => this.pickTag('episodes', tag),
+        onPickArena: (tag) => this.pickTag('arena', tag),
+      })
     );
   }
 
@@ -485,29 +490,28 @@ export default class RolevayaSettingsPage extends ExtensionPage {
       'fas fa-users-slash',
       'Игроки и ID',
       'Фильтры Зала Славы',
-      <FiltersSection
-        tagCharacters={this.tagCharacters}
-        guardianDiscussionIds={this.guardianDiscussionIds}
-        guardianTitles={this.discussionTitles}
-        onAddGuardian={(id, title) => this.addGuardianDiscussion(id, title)}
-        onRemoveGuardian={(id) => this.removeGuardianDiscussion(id)}
-        curatorUserIds={this.curatorUserIds}
-        curatorUsernames={this.curatorUsernames}
-        onAddCurator={(id, username) => this.addCurator(id, username)}
-        onRemoveCurator={(id) => this.removeCurator(id)}
-        excludeCharacterDiscussionIdsText={this.excludeCharacterDiscussionIdsText}
-        onExcludeCharacterDiscussionIdsInput={(value) => {
+      FiltersSection({
+        tagCharacters: this.tagCharacters,
+        guardianDiscussionIds: this.guardianDiscussionIds,
+        guardianTitles: this.discussionTitles,
+        onAddGuardian: (id, title) => this.addGuardianDiscussion(id, title),
+        onRemoveGuardian: (id) => this.removeGuardianDiscussion(id),
+        curatorUserIds: this.curatorUserIds,
+        curatorUsernames: this.curatorUsernames,
+        onAddCurator: (id, username) => this.addCurator(id, username),
+        onRemoveCurator: (id) => this.removeCurator(id),
+        excludeCharacterDiscussionIdsText: this.excludeCharacterDiscussionIdsText,
+        onExcludeCharacterDiscussionIdsInput: (value) => {
           this.excludeCharacterDiscussionIdsText = value;
-        }}
-        onExcludeCharacterDiscussionIdsCommit={() =>
-          this.updateIdListSetting('forumaker-rolevaya.excludeCharacterDiscussionIds', this.excludeCharacterDiscussionIdsText)
-        }
-        activityPeriodDaysText={this.activityPeriodDaysText}
-        onActivityPeriodDaysInput={(value) => {
+        },
+        onExcludeCharacterDiscussionIdsCommit: () =>
+          this.updateIdListSetting('forumaker-rolevaya.excludeCharacterDiscussionIds', this.excludeCharacterDiscussionIdsText),
+        activityPeriodDaysText: this.activityPeriodDaysText,
+        onActivityPeriodDaysInput: (value) => {
           this.activityPeriodDaysText = value;
-        }}
-        onActivityPeriodDaysCommit={() => this.updateActivityPeriodDaysSetting(this.activityPeriodDaysText)}
-      />
+        },
+        onActivityPeriodDaysCommit: () => this.updateActivityPeriodDaysSetting(this.activityPeriodDaysText),
+      })
     );
   }
 }
