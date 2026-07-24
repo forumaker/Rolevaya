@@ -81,9 +81,10 @@ export default class StatsTabs extends Component {
                 onclick={() => void this.recalcActiveTab()}
                 disabled={updateDisabled}
                 title="Пересчитать и обновить данные"
+                aria-label={this.activeUpdateLoading ? 'Пересчёт…' : 'Обновить'}
               >
                 <i className={'fa-solid fa-arrows-rotate' + (updateDisabled ? ' is-spinning' : '')} aria-hidden="true" />
-                <span>{this.activeUpdateLoading ? 'Пересчёт…' : 'Обновить'}</span>
+                <span className="RolevayaRefreshBtn-label">{this.activeUpdateLoading ? 'Пересчёт…' : 'Обновить'}</span>
               </button>
             )}
           </div>

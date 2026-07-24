@@ -31,6 +31,8 @@ class ActivitySnapshotCalculator
 
         $stats = [];
 
+                                                $weekIndexes = [];
+
                                 foreach ($this->repository->scanPosts($roleTag, $period, $now) as $post) {
             $userId = (int) ($post->user_id ?? 0);
             if ($userId <= 0) {
@@ -49,7 +51,7 @@ class ActivitySnapshotCalculator
                     'user_id' => $userId,
                     'posts_count' => 0,
                     'total_chars' => 0,
-                    'active_weeks' => [],
+                    'active_weeks' => '',
                     'first_post_at' => (string) $post->created_at,
                 ];
             }
@@ -58,7 +60,9 @@ class ActivitySnapshotCalculator
             $stats[$userId]['total_chars'] += $length;
 
             $weekKey = CarbonImmutable::parse((string) $post->created_at)->format('o-W');
-            $stats[$userId]['active_weeks'][$weekKey] = true;
+            $weekIndexes[$weekKey] ??= count($weekIndexes);
+
+                                                            $this->setBit($stats[$userId]['active_weeks'], $weekIndexes[$weekKey]);
         }
 
         $payload = [];
@@ -66,7 +70,7 @@ class ActivitySnapshotCalculator
         foreach ($stats as $row) {
             $postsCount = (int) $row['posts_count'];
             $totalChars = (int) $row['total_chars'];
-            $activeWeeks = count($row['active_weeks']);
+            $activeWeeks = $this->countBits((string) $row['active_weeks']);
             $avgChars = $postsCount > 0 ? (int) round($totalChars / $postsCount) : 0;
 
             $payload[] = [
@@ -92,6 +96,36 @@ class ActivitySnapshotCalculator
             'period_days' => $period,
             'scope_tag' => $roleTag,
         ];
+    }
+
+    /**
+     * Mark a week as active inside a compact bitset (1 bit per week instead of
+     * a full array entry per week), so per-user memory stays negligible.
+     */
+    private function setBit(string &$bits, int $offset): void
+    {
+        $byte = $offset >> 3;
+
+        if (strlen($bits) <= $byte) {
+            $bits = str_pad($bits, $byte + 1, "\0");
+        }
+
+        $bits[$byte] = chr(ord($bits[$byte]) | (1 << ($offset & 7)));
+    }
+
+    private function countBits(string $bits): int
+    {
+        if ($bits === '') {
+            return 0;
+        }
+
+        $count = 0;
+
+        foreach (unpack('C*', $bits) as $byte) {
+            $count += substr_count(decbin($byte), '1');
+        }
+
+        return $count;
     }
 
     private function stabilityRatio(string $firstPostAt, int $activeWeeks, CarbonImmutable $now): float

@@ -42,7 +42,7 @@ class EpisodeCompletionBackfill
                 }
 
                 foreach ($entries as $entry) {
-                    $userId = $this->resolveUserId($entry, $userIdCache);
+                    $userId = $this->resolver->resolveWithCache($entry, $userIdCache);
                     if ($userId === null) {
                         continue;
                     }
@@ -72,16 +72,5 @@ class EpisodeCompletionBackfill
         }
 
         return $saved;
-    }
-
-    private function resolveUserId(array $mention, array &$cache): ?int
-    {
-        $key = ($mention['mention_type'] ?? null) . ':' . ($mention['mention_id'] ?? '') . ':' . mb_strtolower($mention['username']);
-
-        if (array_key_exists($key, $cache)) {
-            return $cache[$key];
-        }
-
-        return $cache[$key] = $this->resolver->resolve($mention);
     }
 }

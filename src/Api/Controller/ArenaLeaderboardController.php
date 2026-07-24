@@ -2,6 +2,7 @@
 
 namespace forumaker\Rolevaya\Api\Controller;
 
+use Flarum\Extension\ExtensionManager;
 use Flarum\Settings\SettingsRepositoryInterface;
 use forumaker\Rolevaya\Repository\ArenaLeaderboardRepository;
 use forumaker\Rolevaya\Support\SettingsIdList;
@@ -13,9 +14,16 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class ArenaLeaderboardController implements RequestHandlerInterface
 {
+    /**
+     * forumaker/arena is an optional dependency: without it the arena_stats
+     * table does not exist and any query against it would throw.
+     */
+    private const ARENA_EXTENSION_ID = 'forumaker-arena';
+
     public function __construct(
         protected ArenaLeaderboardRepository $repository,
-        protected SettingsRepositoryInterface $settings
+        protected SettingsRepositoryInterface $settings,
+        protected ExtensionManager $extensions
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -38,12 +46,17 @@ class ArenaLeaderboardController implements RequestHandlerInterface
             []
         );
 
-        $rows = $this->repository->topArena($sort, $limit, $excludeCurators, $curatorUserIds);
+        $available = $this->extensions->isEnabled(self::ARENA_EXTENSION_ID);
+
+        $rows = $available
+            ? $this->repository->topArena($sort, $limit, $excludeCurators, $curatorUserIds)
+            : [];
 
         $res = new JsonResponse([
             'sort' => $sort,
             'limit' => $limit,
             'exclude_curators' => $excludeCurators,
+            'available' => $available,
             'data' => $rows,
         ]);
 
