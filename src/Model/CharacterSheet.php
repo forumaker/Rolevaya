@@ -34,4 +34,19 @@ class CharacterSheet extends AbstractModel
         'source_post_number' => 'int',
         'parsed_at'  => 'datetime',
     ];
+
+    /**
+     * Highest roleplay_experience among this user's character sheets — a
+     * user can have several (one per character discussion, keyed by
+     * discussion_id — see ParseCharacterSheet), each with its own
+     * self-reported experience value. Used by fof/badges' RoleplayExperienceMetric
+     * (badge "На опыте") as the read point for a user's roleplay experience,
+     * the same way forumaker\Arena\ArenaStats::forUser() is for Arena badges —
+     * best/most-developed character represents the player here, not a sum
+     * across characters.
+     */
+    public static function maxExperienceForUser(int $userId): int
+    {
+        return (int) (static::where('user_id', $userId)->max('roleplay_experience') ?? 0);
+    }
 }
