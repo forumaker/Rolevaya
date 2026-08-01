@@ -2,17 +2,13 @@
 
 namespace forumaker\Rolevaya\Repository;
 
-use Flarum\User\User;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
 class ArenaLeaderboardRepository
 {
-    protected ConnectionInterface $db;
-
-    public function __construct(User $model)
+    public function __construct(protected ConnectionInterface $db)
     {
-        $this->db = $model->getConnection();
     }
 
     public function topArena(string $sort, int $limit, bool $excludeCurators, array $excludeUserIds): Collection

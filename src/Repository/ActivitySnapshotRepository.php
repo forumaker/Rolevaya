@@ -9,11 +9,8 @@ use Illuminate\Support\LazyCollection;
 
 class ActivitySnapshotRepository
 {
-    protected ConnectionInterface $db;
-
-    public function __construct(UserActivitySnapshot $model)
+    public function __construct(protected ConnectionInterface $db)
     {
-        $this->db = $model->getConnection();
     }
 
     public function scanPosts(string $roleTag, int $period, CarbonImmutable $now): LazyCollection

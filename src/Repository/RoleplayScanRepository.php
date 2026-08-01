@@ -2,17 +2,13 @@
 
 namespace forumaker\Rolevaya\Repository;
 
-use Flarum\Post\Post;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
 class RoleplayScanRepository
 {
-    protected ConnectionInterface $db;
-
-    public function __construct(Post $model)
+    public function __construct(protected ConnectionInterface $db)
     {
-        $this->db = $model->getConnection();
     }
 
     public function discussionIdsForTag(

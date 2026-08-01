@@ -2,20 +2,16 @@
 
 namespace forumaker\Rolevaya\Repository;
 
-use forumaker\Rolevaya\Model\CharacterSheet;
 use forumaker\Rolevaya\RoleplayTags;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
 class CharacterLeaderboardRepository
 {
-    protected ConnectionInterface $db;
-
     public function __construct(
-        CharacterSheet $model,
+        protected ConnectionInterface $db,
         protected RoleplayTags $tags
     ) {
-        $this->db = $model->getConnection();
     }
 
     public function topCharacters(string $sort, int $limit, bool $excludeGuardians, array $excludeDiscussionIds): Collection

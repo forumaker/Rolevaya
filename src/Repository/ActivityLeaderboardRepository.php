@@ -2,20 +2,16 @@
 
 namespace forumaker\Rolevaya\Repository;
 
-use forumaker\Rolevaya\Model\UserActivitySnapshot;
 use forumaker\Rolevaya\RoleplayTags;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
 class ActivityLeaderboardRepository
 {
-    protected ConnectionInterface $db;
-
     public function __construct(
-        UserActivitySnapshot $model,
+        protected ConnectionInterface $db,
         protected RoleplayTags $tags
     ) {
-        $this->db = $model->getConnection();
     }
 
     public function topActivity(
