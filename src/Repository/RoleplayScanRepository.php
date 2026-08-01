@@ -2,15 +2,12 @@
 
 namespace forumaker\Rolevaya\Repository;
 
-use Illuminate\Database\ConnectionInterface;
+use Flarum\Discussion\Discussion;
+use Flarum\Post\Post;
 use Illuminate\Support\Collection;
 
 class RoleplayScanRepository
 {
-    public function __construct(protected ConnectionInterface $db)
-    {
-    }
-
     public function discussionIdsForTag(
         string $tagSlug,
         ?int $limit = null,
@@ -18,7 +15,8 @@ class RoleplayScanRepository
         ?int $discussionIdMax = null,
         array $excludeDiscussionIds = []
     ): array {
-        $q = $this->db->table('discussion_tag as dt')
+        $q = Discussion::query()
+            ->join('discussion_tag as dt', 'dt.discussion_id', '=', 'discussions.id')
             ->join('tags as t', 't.id', '=', 'dt.tag_id')
             ->where('t.slug', '=', $tagSlug)
             ->select('dt.discussion_id')
@@ -43,7 +41,7 @@ class RoleplayScanRepository
 
     public function completionCandidatePosts(array $discussionIdChunk): Collection
     {
-        return $this->db->table('posts')
+        return Post::query()
             ->whereIn('discussion_id', $discussionIdChunk)
             ->where('type', '=', 'comment')
             ->whereNull('hidden_at')
@@ -58,7 +56,7 @@ class RoleplayScanRepository
 
     public function characterSheetCandidatePosts(array $discussionIdChunk, int $scanLimit, int $targetNumber): Collection
     {
-        return $this->db->table('posts')
+        return Post::query()
             ->whereIn('discussion_id', $discussionIdChunk)
             ->where('type', '=', 'comment')
             ->whereNull('hidden_at')

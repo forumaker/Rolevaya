@@ -3,19 +3,15 @@
 namespace forumaker\Rolevaya\Repository;
 
 use Carbon\CarbonImmutable;
+use Flarum\Post\Post;
 use forumaker\Rolevaya\Model\UserActivitySnapshot;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\LazyCollection;
 
 class ActivitySnapshotRepository
 {
-    public function __construct(protected ConnectionInterface $db)
-    {
-    }
-
     public function scanPosts(string $roleTag, int $period, CarbonImmutable $now): LazyCollection
     {
-        $postsQ = $this->db->table('posts')
+        $postsQ = Post::query()
             ->join('discussion_tag', 'discussion_tag.discussion_id', '=', 'posts.discussion_id')
             ->join('tags', 'tags.id', '=', 'discussion_tag.tag_id')
             ->where('tags.slug', '=', $roleTag)
@@ -40,7 +36,7 @@ class ActivitySnapshotRepository
 
     public function replaceSnapshots(int $period, string $roleTag, array $payload): void
     {
-        $this->db->transaction(function () use ($period, $roleTag, $payload) {
+        UserActivitySnapshot::query()->getConnection()->transaction(function () use ($period, $roleTag, $payload) {
             UserActivitySnapshot::query()
                 ->where('period_days', '=', $period)
                 ->where('scope_tag', '=', $roleTag)

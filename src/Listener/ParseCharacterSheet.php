@@ -30,7 +30,11 @@ class ParseCharacterSheet
             return;
         }
 
-                                                        if (!$discussion->tags->contains('slug', $this->tags->characters())) {
+        // Relies on Flarum core's post-save pipeline having already loaded the
+        // discussion's `tags` relation onto $discussion by this point; Eloquent
+        // caches it on the model instance, so this lazy-loads it once (not once
+        // per listener) if that assumption ever stops holding.
+        if (!$discussion->tags->contains('slug', $this->tags->characters())) {
             return;
         }
 

@@ -2,14 +2,15 @@
 
 namespace forumaker\Rolevaya\Repository;
 
+use forumaker\Rolevaya\Model\CompletedArc;
+use forumaker\Rolevaya\Model\CompletedEpisode;
+use forumaker\Rolevaya\Model\UserActivitySnapshot;
 use forumaker\Rolevaya\RoleplayTags;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
 
 class ActivityLeaderboardRepository
 {
     public function __construct(
-        protected ConnectionInterface $db,
         protected RoleplayTags $tags
     ) {
     }
@@ -24,72 +25,76 @@ class ActivityLeaderboardRepository
     ): Collection {
         $roleTag = $this->tags->role();
 
-        $arcCounts = $this->db->table('completed_arcs')
-            ->select('user_id', $this->db->raw('COUNT(*) as cnt'))
+        $arcCounts = CompletedArc::query()
+            ->select('user_id')
+            ->selectRaw('COUNT(*) as cnt')
             ->groupBy('user_id');
 
-        $episodeCounts = $this->db->table('completed_episodes')
-            ->select('user_id', $this->db->raw('COUNT(*) as cnt'))
+        $episodeCounts = CompletedEpisode::query()
+            ->select('user_id')
+            ->selectRaw('COUNT(*) as cnt')
             ->groupBy('user_id');
 
-        $q = $this->db->table('user_activity_snapshots as uas')
-            ->leftJoin('users as u', 'u.id', '=', 'uas.user_id')
-            ->leftJoinSub($arcCounts, 'ac', 'ac.user_id', '=', 'uas.user_id')
-            ->leftJoinSub($episodeCounts, 'ec', 'ec.user_id', '=', 'uas.user_id')
-            ->where('uas.period_days', '=', $period)
-            ->where('uas.scope_tag', '=', $roleTag);
+        $q = UserActivitySnapshot::query()
+            ->leftJoin('users as u', 'u.id', '=', 'user_activity_snapshots.user_id')
+            ->leftJoinSub($arcCounts, 'ac', 'ac.user_id', '=', 'user_activity_snapshots.user_id')
+            ->leftJoinSub($episodeCounts, 'ec', 'ec.user_id', '=', 'user_activity_snapshots.user_id')
+            ->where('user_activity_snapshots.period_days', '=', $period)
+            ->where('user_activity_snapshots.scope_tag', '=', $roleTag);
 
         if ($excludeCurators && count($excludeUserIds)) {
-            $q->whereNotIn('uas.user_id', $excludeUserIds);
+            $q->whereNotIn('user_activity_snapshots.user_id', $excludeUserIds);
         }
 
         if ($minPosts > 0) {
-            $q->where('uas.posts_count', '>=', $minPosts);
+            $q->where('user_activity_snapshots.posts_count', '>=', $minPosts);
         }
 
         switch ($sort) {
             case 'posts_count':
-                $q->orderByDesc('uas.posts_count')
-                  ->orderByDesc('uas.stability_ratio');
+                $q->orderByDesc('user_activity_snapshots.posts_count')
+                  ->orderByDesc('user_activity_snapshots.stability_ratio');
                 break;
 
             case 'avg_chars':
-                $q->orderByDesc('uas.avg_chars')
-                  ->orderByDesc('uas.posts_count');
+                $q->orderByDesc('user_activity_snapshots.avg_chars')
+                  ->orderByDesc('user_activity_snapshots.posts_count');
                 break;
 
             case 'completed_arcs_count':
-                $q->orderByDesc($this->db->raw('COALESCE(ac.cnt, 0)'))
-                  ->orderByDesc('uas.posts_count');
+                $q->orderByRaw('COALESCE(ac.cnt, 0) DESC')
+                  ->orderByDesc('user_activity_snapshots.posts_count');
                 break;
 
             case 'completed_episodes_count':
-                $q->orderByDesc($this->db->raw('COALESCE(ec.cnt, 0)'))
-                  ->orderByDesc('uas.posts_count');
+                $q->orderByRaw('COALESCE(ec.cnt, 0) DESC')
+                  ->orderByDesc('user_activity_snapshots.posts_count');
                 break;
 
             default:
-                                                                                $q->orderByDesc('uas.stability_ratio')
-                  ->orderByDesc('uas.posts_count');
+                $q->orderByDesc('user_activity_snapshots.stability_ratio')
+                  ->orderByDesc('user_activity_snapshots.posts_count');
                 break;
         }
 
-        return $q->limit($limit)->get([
-            'uas.user_id',
-            'u.username',
-            'u.nickname',
-            'u.avatar_url',
-            'uas.period_days',
-            'uas.scope_tag',
-            'uas.posts_count',
-            'uas.total_chars',
-            'uas.avg_chars',
-            'uas.active_weeks',
-            'uas.stability_ratio',
-            'uas.calculated_at',
-            'uas.updated_at',
-            $this->db->raw('COALESCE(ac.cnt, 0) as completed_arcs_count'),
-            $this->db->raw('COALESCE(ec.cnt, 0) as completed_episodes_count'),
-        ]);
+        $q->select([
+                'user_activity_snapshots.user_id',
+                'u.username',
+                'u.nickname',
+                'u.avatar_url',
+                'user_activity_snapshots.period_days',
+                'user_activity_snapshots.scope_tag',
+                'user_activity_snapshots.posts_count',
+                'user_activity_snapshots.total_chars',
+                'user_activity_snapshots.avg_chars',
+                'user_activity_snapshots.active_weeks',
+                'user_activity_snapshots.stability_ratio',
+                'user_activity_snapshots.calculated_at',
+                'user_activity_snapshots.updated_at',
+            ])
+            ->selectRaw('COALESCE(ac.cnt, 0) as completed_arcs_count')
+            ->selectRaw('COALESCE(ec.cnt, 0) as completed_episodes_count');
+
+        return $q->limit($limit)->get();
     }
 }

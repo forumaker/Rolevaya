@@ -7,6 +7,16 @@ use Flarum\Settings\SettingsRepositoryInterface;
 use forumaker\Rolevaya\Repository\ActivitySnapshotRepository;
 use forumaker\Rolevaya\RoleplayTags;
 
+/**
+ * Streams posts via a DB cursor (so the result set itself is never fully
+ * buffered), but each post's `content` column is pulled into PHP string
+ * space one row at a time before being stripped and measured. Peak memory
+ * is bounded by the size of the single largest post, not the whole dataset
+ * — fine today, but if very long narrative posts become common, or the
+ * queue worker's memory_limit is tight, this job can OOM. Configure worker
+ * memory accordingly, or consider prefiltering by content length in SQL,
+ * before it becomes a problem.
+ */
 class ActivitySnapshotCalculator
 {
     private const MIN_POST_LENGTH = 400;

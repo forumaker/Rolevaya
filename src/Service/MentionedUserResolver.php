@@ -7,6 +7,13 @@ use Flarum\User\User;
 
 class MentionedUserResolver
 {
+    /**
+     * Lazily built map of lowercased username/nickname => user id, used as a
+     * DB-portable fallback for case-insensitive matching (see resolveByText()).
+     *
+     * @var array<string,int>|null
+     */
+    private ?array $lowercaseIndex = null;
 
     /**
      * Resolve a mention reusing a caller-owned cache, so the same mention
@@ -65,25 +72,48 @@ class MentionedUserResolver
             return null;
         }
 
-        $key = mb_strtolower($username);
+        $exact = User::query()
+            ->where('username', $username)
+            ->orWhere('nickname', $username)
+            ->first();
 
-                                                                        $candidates = User::query()
-            ->where(function ($q) use ($username, $key) {
-                $q->where('username', $username)
-                  ->orWhereRaw('LOWER(username) = ?', [$key])
-                  ->orWhereRaw('LOWER(nickname) = ?', [$key]);
-            })
-            ->limit(10)
-            ->get();
-
-        if ($candidates->isEmpty()) {
-            return null;
+        if ($exact) {
+            return (int) $exact->id;
         }
 
-                                        $exact = $candidates->first(fn ($u) => (string) $u->username === $username)
-            ?? $candidates->first(fn ($u) => mb_strtolower((string) $u->username) === $key)
-            ?? $candidates->first();
+        return $this->lowercaseIndex()[mb_strtolower($username)] ?? null;
+    }
 
-        return (int) $exact->id;
+    /**
+     * SQLite's built-in LOWER() only folds ASCII characters, so
+     * `LOWER(username) = ?` silently never matches Cyrillic usernames there
+     * (this forum's usernames/nicknames are Russian). Case-folding is done
+     * in PHP with mb_strtolower() instead, against a small id/username/
+     * nickname index built once per resolver instance rather than per
+     * mention, so this stays cheap even across a large backfill run.
+     *
+     * @return array<string,int>
+     */
+    private function lowercaseIndex(): array
+    {
+        if ($this->lowercaseIndex !== null) {
+            return $this->lowercaseIndex;
+        }
+
+        $index = [];
+
+        User::query()
+            ->select(['id', 'username', 'nickname'])
+            ->cursor()
+            ->each(function ($user) use (&$index) {
+                if ($user->username) {
+                    $index[mb_strtolower($user->username)] ??= (int) $user->id;
+                }
+                if ($user->nickname) {
+                    $index[mb_strtolower($user->nickname)] ??= (int) $user->id;
+                }
+            });
+
+        return $this->lowercaseIndex = $index;
     }
 }
