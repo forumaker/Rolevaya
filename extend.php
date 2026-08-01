@@ -4,7 +4,8 @@ namespace forumaker\Rolevaya;
 
 use Flarum\Api\Resource;
 use Flarum\Extend;
-use Flarum\User\Filter\UserFilterer;
+use Flarum\Search\Database\DatabaseSearchDriver;
+use Flarum\User\Search\UserSearcher;
 use forumaker\Rolevaya\Search\Filter\UserIdFilter;
 use forumaker\Rolevaya\Api\Controller\CharacterLeaderboardController;
 use forumaker\Rolevaya\Api\Controller\UserActivityLeaderboardController;
@@ -36,8 +37,8 @@ return [
 
     new Extend\Locales(__DIR__ . '/resources/locale'),
 
-    (new Extend\Filter(UserFilterer::class))
-        ->addFilter(UserIdFilter::class),
+    (new Extend\SearchDriver(DatabaseSearchDriver::class))
+        ->addFilter(UserSearcher::class, UserIdFilter::class),
 
     (new Extend\ApiResource(Resource\ForumResource::class))
         ->fields(Api\ForumResourceFields::class),
