@@ -170,20 +170,18 @@ export async function ensureUsersLoaded(userIds: number[]) {
 
   inflightRun = (async () => {
     try {
-      const concurrency = 4;
+      // Batch by filter[id] instead of one GET /api/users/:id per user (avoids an N+1 request pattern).
+      const chunkSize = 200;
 
       while (pendingUserIds.size) {
-        const batch = Array.from(pendingUserIds).slice(0, 200);
+        const batch = Array.from(pendingUserIds).slice(0, chunkSize);
         batch.forEach((id) => {
           pendingUserIds.delete(id);
           ensuredUserIds.add(id);
         });
 
-        for (let i = 0; i < batch.length; i += concurrency) {
-          const chunk = batch.slice(i, i + concurrency);
-          await Promise.all(chunk.map((id) => app.store.find('users', String(id)).catch(() => null)));
-          m.redraw();
-        }
+        await app.store.find('users', { filter: { id: batch.join(',') } }).catch(() => null);
+        m.redraw();
       }
     } finally {
       inflightRun = null;

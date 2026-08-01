@@ -7,13 +7,16 @@ use forumaker\Rolevaya\Model\CompletedArc;
 use forumaker\Rolevaya\RoleplayTags;
 use forumaker\Rolevaya\Service\ArcCompletionParser;
 use forumaker\Rolevaya\Service\MentionedUserResolver;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 class ParseArcCompletion
 {
     public function __construct(
         protected ArcCompletionParser $parser,
         protected MentionedUserResolver $resolver,
-        protected RoleplayTags $tags
+        protected RoleplayTags $tags,
+        protected LoggerInterface $logger
     ) {}
 
     public function handle(Saved $event): void
@@ -48,19 +51,23 @@ class ParseArcCompletion
                 continue;
             }
 
-                                                                                    CompletedArc::updateOrCreate(
-                [
-                    'source_post_id' => (int) $post->id,
-                    'arc_title'      => $arc['arc_title'],
-                    'user_id'        => $userId,
-                ],
-                [
-                    'discussion_id' => (int) $discussion->id,
-                    'experience'    => $arc['experience'],
-                    'gold'          => $arc['gold'],
-                    'parsed_at'     => $now,
-                ]
-            );
+            try {
+                CompletedArc::updateOrCreate(
+                    [
+                        'source_post_id' => (int) $post->id,
+                        'arc_title'      => $arc['arc_title'],
+                        'user_id'        => $userId,
+                    ],
+                    [
+                        'discussion_id' => (int) $discussion->id,
+                        'experience'    => $arc['experience'],
+                        'gold'          => $arc['gold'],
+                        'parsed_at'     => $now,
+                    ]
+                );
+            } catch (Throwable $e) {
+                $this->logger->error('[forumaker-rolevaya] Failed to save completed arc for post #' . $post->id . ': ' . $e->getMessage(), ['exception' => $e]);
+            }
         }
     }
 }

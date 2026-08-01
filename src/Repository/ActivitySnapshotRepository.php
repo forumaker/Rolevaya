@@ -4,10 +4,17 @@ namespace forumaker\Rolevaya\Repository;
 
 use Carbon\CarbonImmutable;
 use forumaker\Rolevaya\Model\UserActivitySnapshot;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\LazyCollection;
 
-class ActivitySnapshotRepository extends DatabaseRepository
+class ActivitySnapshotRepository
 {
+    protected ConnectionInterface $db;
+
+    public function __construct(UserActivitySnapshot $model)
+    {
+        $this->db = $model->getConnection();
+    }
 
     public function scanPosts(string $roleTag, int $period, CarbonImmutable $now): LazyCollection
     {

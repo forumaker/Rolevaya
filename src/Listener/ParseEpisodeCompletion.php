@@ -7,13 +7,16 @@ use forumaker\Rolevaya\Model\CompletedEpisode;
 use forumaker\Rolevaya\RoleplayTags;
 use forumaker\Rolevaya\Service\EpisodeCompletionParser;
 use forumaker\Rolevaya\Service\MentionedUserResolver;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 class ParseEpisodeCompletion
 {
     public function __construct(
         protected EpisodeCompletionParser $parser,
         protected MentionedUserResolver $resolver,
-        protected RoleplayTags $tags
+        protected RoleplayTags $tags,
+        protected LoggerInterface $logger
     ) {}
 
     public function handle(Saved $event): void
@@ -48,16 +51,20 @@ class ParseEpisodeCompletion
                 continue;
             }
 
-            CompletedEpisode::updateOrCreate(
-                [
-                    'source_post_id' => (int) $post->id,
-                    'user_id'        => $userId,
-                ],
-                [
-                    'discussion_id' => (int) $discussion->id,
-                    'parsed_at'     => $now,
-                ]
-            );
+            try {
+                CompletedEpisode::updateOrCreate(
+                    [
+                        'source_post_id' => (int) $post->id,
+                        'user_id'        => $userId,
+                    ],
+                    [
+                        'discussion_id' => (int) $discussion->id,
+                        'parsed_at'     => $now,
+                    ]
+                );
+            } catch (Throwable $e) {
+                $this->logger->error('[forumaker-rolevaya] Failed to save completed episode for post #' . $post->id . ': ' . $e->getMessage(), ['exception' => $e]);
+            }
         }
     }
 }
