@@ -41,6 +41,10 @@ class ArenaLeaderboardRepository
                 $q->orderByRaw("{$winRateExpr} DESC")->orderByDesc('arena_stats.wins');
                 break;
 
+            case 'rating':
+                $q->orderByDesc('arena_stats.rating')->orderByDesc('arena_stats.wins');
+                break;
+
             case 'wins':
             default:
                 $q->orderByDesc('arena_stats.wins')->orderByRaw("{$winRateExpr} DESC");
@@ -55,6 +59,7 @@ class ArenaLeaderboardRepository
             'arena_stats.wins',
             'arena_stats.losses',
             'arena_stats.draws',
+            'arena_stats.rating',
             $this->db->raw("{$winRateExpr} as win_rate"),
         ]);
     }

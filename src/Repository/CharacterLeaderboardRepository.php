@@ -13,8 +13,13 @@ class CharacterLeaderboardRepository
     ) {
     }
 
-    public function topCharacters(string $sort, int $limit, bool $excludeGuardians, array $excludeDiscussionIds): Collection
-    {
+    public function topCharacters(
+        string $sort,
+        int $limit,
+        bool $excludeGuardians,
+        array $guardianDiscussionIds,
+        array $excludeDiscussionIds = []
+    ): Collection {
         $charactersTag = $this->tags->characters();
 
         $q = CharacterSheet::query()
@@ -24,8 +29,12 @@ class CharacterLeaderboardRepository
             ->join('tags as t', 't.id', '=', 'dt.tag_id')
             ->where('t.slug', '=', $charactersTag);
 
-        if ($excludeGuardians && count($excludeDiscussionIds)) {
+        if (count($excludeDiscussionIds)) {
             $q->whereNotIn('character_sheets.discussion_id', $excludeDiscussionIds);
+        }
+
+        if ($excludeGuardians && count($guardianDiscussionIds)) {
+            $q->whereNotIn('character_sheets.discussion_id', $guardianDiscussionIds);
         }
 
         return $q->orderByDesc('character_sheets.' . $sort)

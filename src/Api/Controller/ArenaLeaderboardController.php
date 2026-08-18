@@ -30,9 +30,9 @@ class ArenaLeaderboardController implements RequestHandlerInterface
     {
         $query = $request->getQueryParams();
 
-        $sort = (string) Arr::get($query, 'sort', 'wins');
-        if (!in_array($sort, ['wins', 'losses', 'draws', 'winrate'], true)) {
-            $sort = 'wins';
+        $sort = (string) Arr::get($query, 'sort', 'rating');
+        if (!in_array($sort, ['wins', 'losses', 'draws', 'winrate', 'rating'], true)) {
+            $sort = 'rating';
         }
 
         $limit = (int) Arr::get($query, 'limit', 50);

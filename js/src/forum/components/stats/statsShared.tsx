@@ -49,6 +49,7 @@ export type ArenaRow = {
   losses: number;
   draws: number;
   win_rate: number;
+  rating: number;
 };
 
 export type PlayerRow = { nickname?: string | null; username?: string | null; user_id: number };

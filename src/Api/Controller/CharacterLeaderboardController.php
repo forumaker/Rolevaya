@@ -36,13 +36,18 @@ class CharacterLeaderboardController implements RequestHandlerInterface
         if ($limit > 200) $limit = 200;
 
         $excludeGuardians = (int) Arr::get($query, 'exclude_guardians', 0) === 1;
-                                        $guardianDiscussionIds = SettingsIdList::read(
+        $guardianDiscussionIds = SettingsIdList::read(
             $this->settings,
             'forumaker-rolevaya.guardianDiscussionIds',
             []
         );
+        $excludeDiscussionIds = SettingsIdList::read(
+            $this->settings,
+            'forumaker-rolevaya.excludeCharacterDiscussionIds',
+            []
+        );
 
-        $rows = $this->repository->topCharacters($sort, $limit, $excludeGuardians, $guardianDiscussionIds);
+        $rows = $this->repository->topCharacters($sort, $limit, $excludeGuardians, $guardianDiscussionIds, $excludeDiscussionIds);
 
         return new JsonResponse([
             'sort' => $sort,

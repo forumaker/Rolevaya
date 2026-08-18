@@ -12,15 +12,17 @@ export type ArenaRow = RowIdentity & {
   losses: number;
   draws: number;
   win_rate: number;
+  rating: number;
 };
 
 function statsEqual(a: ArenaRow, b: ArenaRow) {
-  return a.wins === b.wins && a.losses === b.losses && a.draws === b.draws && a.win_rate === b.win_rate;
+  return a.wins === b.wins && a.losses === b.losses && a.draws === b.draws && a.rating === b.rating;
 }
 
 const softRefreshMs = 60 * 1000;
 
-const cache = new SliderCache<ArenaRow>('forumaker-rolevaya-home-slider-arena-v1');
+// v2: row shape changed from win_rate to rating (see statsEqual/renderStats above).
+const cache = new SliderCache<ArenaRow>('forumaker-rolevaya-home-slider-arena-v2');
 
 interface Attrs {
   active: boolean;
@@ -116,7 +118,7 @@ export default class ArenaSlider extends Component<Attrs> {
         method: 'GET',
         url: apiUrl('/rolevaya/arena-leaderboard'),
         params: {
-          sort: 'wins',
+          sort: 'rating',
           limit: 10,
         },
       })
@@ -251,8 +253,8 @@ export default class ArenaSlider extends Component<Attrs> {
         </div>
 
         <div className="RolevayaHomeCard-stat">
-          <span className="RolevayaHomeCard-statLabel">Винрейт</span>
-          <strong className="RolevayaHomeCard-statValue">{row.win_rate}%</strong>
+          <span className="RolevayaHomeCard-statLabel">Рейтинг</span>
+          <strong className="RolevayaHomeCard-statValue">{row.rating}</strong>
         </div>
       </div>
     );

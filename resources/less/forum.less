@@ -384,6 +384,16 @@
     grid-column: 1 / span 2;
   }
 
+  // Spans every column of the grid regardless of the current breakpoint's
+  // column count (2 on mobile, 4 from 900px) — unlike --wide2 (a fixed
+  // 2-column span, full width on mobile but only half on desktop), this is
+  // for a stat that should always take its own full row. Used for Рейтинг
+  // in ArenaTab's card grid, placed after the other four stats.
+  .RolevayaStat--wideFull {
+    grid-column-start: 1;
+    grid-column-end: -1;
+  }
+
   @media (min-width: 900px) {
     .RolevayaStatsGrid {
       grid-template-columns: repeat(4, minmax(0, 1fr));

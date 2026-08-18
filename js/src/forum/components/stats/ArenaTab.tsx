@@ -14,7 +14,7 @@ import {
 } from './statsShared';
 
 export default class ArenaTab extends Component {
-  sort: 'wins' | 'winrate' | 'losses' | 'draws' = 'wins';
+  sort: 'rating' | 'wins' | 'winrate' | 'losses' | 'draws' = 'rating';
 
   limit = 24;
   private readonly pageSize = 24;
@@ -89,6 +89,7 @@ export default class ArenaTab extends Component {
               void this.load(true);
             }}
           >
+            <option value="rating">Рейтинг</option>
             <option value="wins">Победы</option>
             <option value="winrate">Винрейт</option>
             <option value="losses">Поражения</option>
@@ -150,7 +151,7 @@ export default class ArenaTab extends Component {
                   </div>
 
                   <div className="RolevayaStatsGrid">
-                    <div className="RolevayaStat RolevayaStat--primary">
+                    <div className="RolevayaStat">
                       <div className="RolevayaStatLabel">Победы</div>
                       <div className="RolevayaStatValue">{r.wins}</div>
                     </div>
@@ -168,6 +169,11 @@ export default class ArenaTab extends Component {
                     <div className="RolevayaStat">
                       <div className="RolevayaStatLabel">Винрейт</div>
                       <div className="RolevayaStatValue">{r.win_rate}%</div>
+                    </div>
+
+                    <div className="RolevayaStat RolevayaStat--primary RolevayaStat--wideFull">
+                      <div className="RolevayaStatLabel">Рейтинг</div>
+                      <div className="RolevayaStatValue">{r.rating}</div>
                     </div>
                   </div>
                 </div>
