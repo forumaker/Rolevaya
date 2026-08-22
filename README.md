@@ -1,7 +1,7 @@
 # 🐉 Rolevaya for Flarum
 Adds Hall of Fame on QuestPost. **Supports Flarum 2.x**
 
-![License](https://img.shields.io/badge/license-MIT-blue) ![Packagist Version](https://img.shields.io/packagist/v/forumaker/rolevaya) ![Downloads](https://img.shields.io/packagist/dt/forumaker/rolevaya) ![Review](https://floxum.com/extension/forumaker/rolevaya/badge/review-score)
+![License](https://img.shields.io/badge/license-MIT-blue) ![Packagist Version](https://img.shields.io/packagist/v/forumaker/rolevaya) ![Downloads](https://img.shields.io/packagist/dt/forumaker/rolevaya)
 
 ## ❗ Important
 This extension is built specifically for the **QuestPost** forum. It parses post content and tag slugs that only make sense in QuestPost's own roleplay setup — specific BBCode/XML completion markup, Russian-language stat sheet layout, hardcoded curator/guardian user and discussion IDs, forum-specific settings.
