@@ -45,6 +45,18 @@ export default class StatsTabs extends Component {
       <div className="RolevayaTabs">
         <div className="RolevayaToolbar">
           <div className="RolevayaToolbar-group RolevayaToolbar-group--tabs">
+            {app.forum.attribute('canRecalculateRolevaya') && (
+              <button
+                className="Button RolevayaRefreshBtn RolevayaRefreshBtn--iconOnly"
+                onclick={() => void this.recalcActiveTab()}
+                disabled={updateDisabled}
+                title="Пересчитать и обновить данные"
+                aria-label={this.activeUpdateLoading ? 'Пересчёт…' : 'Обновить'}
+              >
+                <i className={'fa-solid fa-arrows-rotate' + (updateDisabled ? ' is-spinning' : '')} aria-hidden="true" />
+              </button>
+            )}
+
             <button
               className={'Button RolevayaFilterBtn' + (this.activeTab === 'characters' ? ' active' : '')}
               onclick={() => {
@@ -74,19 +86,6 @@ export default class StatsTabs extends Component {
             >
               Арена
             </button>
-
-            {app.forum.attribute('canRecalculateRolevaya') && (
-              <button
-                className="Button RolevayaRefreshBtn"
-                onclick={() => void this.recalcActiveTab()}
-                disabled={updateDisabled}
-                title="Пересчитать и обновить данные"
-                aria-label={this.activeUpdateLoading ? 'Пересчёт…' : 'Обновить'}
-              >
-                <i className={'fa-solid fa-arrows-rotate' + (updateDisabled ? ' is-spinning' : '')} aria-hidden="true" />
-                <span className="RolevayaRefreshBtn-label">{this.activeUpdateLoading ? 'Пересчёт…' : 'Обновить'}</span>
-              </button>
-            )}
           </div>
 
           {this.activeTabComponent?.renderControls()}

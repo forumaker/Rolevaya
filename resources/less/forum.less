@@ -71,6 +71,23 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  // Icon-only circle — same fixed 34px dimensions as huseyinfiliz/leaderboard's
+  // .LeaderboardPage-refreshBtn (the "Рейтинг" page's own icon-only refresh
+  // button), so the two read as the same control. A flex-basis padding
+  // (e.g. "6px 10px") stretches wider than tall here since the icon alone
+  // doesn't fill a pill shape the way icon+label text used to.
+  &--iconOnly {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    gap: 0;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
 }
 
 @keyframes RolevayaSpin {
@@ -119,15 +136,6 @@
 
   .RolevayaToolbar-group--filters {
     justify-content: flex-start;
-  }
-
-    .RolevayaRefreshBtn {
-    gap: 0;
-    padding-inline: 10px;
-
-    .RolevayaRefreshBtn-label {
-      display: none;
-    }
   }
 }
 

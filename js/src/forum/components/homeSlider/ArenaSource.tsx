@@ -107,7 +107,7 @@ export class ArenaSource {
         url: apiUrl('/rolevaya/arena-leaderboard'),
         params: {
           sort: 'rating',
-          limit: 10,
+          limit: 15,
         },
       })
       .then((res: any) => (res?.data || []) as ArenaRow[])

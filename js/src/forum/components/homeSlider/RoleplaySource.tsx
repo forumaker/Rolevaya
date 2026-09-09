@@ -124,7 +124,7 @@ export class RoleplaySource {
         url: apiUrl('/rolevaya/activity'),
         params: {
           sort: 'posts_count',
-          limit: 10,
+          limit: 15,
         },
       })
       .then((res: any) => (res?.data || []) as ActivityRow[])
