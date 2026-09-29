@@ -34,7 +34,7 @@ class EpisodeCompletionParser
 
                 $title = trim($tm[1], "\"' \t\r\n");
 
-                if (!preg_match('/ЭПИЗОД\s*ЗАВЕРШ(?:ЁН|ЕН|ЕНА|ЕНЫ)/iu', $title)) {
+                if (!preg_match('/ЭПИЗОД\s*(?:ЗАВЕРШ(?:ЁН|ЕН|ЕНА|ЕНЫ)|ЗАКРЫТ)/iu', $title)) {
                     continue;
                 }
 
@@ -46,7 +46,7 @@ class EpisodeCompletionParser
             foreach ($matches as $m) {
                 $title = trim($m[1]);
 
-                if (!preg_match('/ЭПИЗОД\s*ЗАВЕРШ(?:ЁН|ЕН|ЕНА|ЕНЫ)/iu', $title)) {
+                if (!preg_match('/ЭПИЗОД\s*(?:ЗАВЕРШ(?:ЁН|ЕН|ЕНА|ЕНЫ)|ЗАКРЫТ)/iu', $title)) {
                     continue;
                 }
 
