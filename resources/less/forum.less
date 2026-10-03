@@ -894,6 +894,54 @@ body[data-theme='dark'] .RolevayaHomeCard-stat,
   box-shadow: none !important;
 }
 
+// Подложка стрелок и плиток в тёмных темах (data-theme='dark' и 'dark-hc'):
+// те же причины и тот же приём, что у Fresh-виджета (см.
+// Fresh/resources/less/forum.less) — правила выше привязаны к
+// data-theme='dark', а в dark-hc срабатывает светлая ветка с тёмным текстом
+// на тёмном фоне. Подложка — var(--control-bg), без рамки.
+
+html[data-theme^='dark'] .App .RolevayaHomeWidget-arrow {
+  color: var(--control-color) !important;
+  border: 0 !important;
+  background: var(--control-bg) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme^='dark'] .App .RolevayaHomeWidget-arrow:hover,
+html[data-theme^='dark'] .App .RolevayaHomeWidget-arrow:focus {
+  color: var(--heading-color) !important;
+  border: 0 !important;
+  background: var(--control-bg-shaded) !important;
+}
+
+// Только контрастная тёмная: плитка как у BadgeCard
+html[data-theme='dark-hc'] .App .RolevayaHomeCard {
+  background: var(--control-bg) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+// Вложенные плашки (ранг, статы) — серые, как в обычной тёмной: светлая ветка
+// давала на них тёмный полупрозрачный цвет, и на карточке они выглядели чёрными
+html[data-theme='dark-hc'] .App .RolevayaHomeCard-rank {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme='dark-hc'] .App .RolevayaHomeCard-stat {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+// Светлые темы (light и light-hc): стрелки без обводки
+html[data-theme^='light'] .App .RolevayaHomeWidget-arrow,
+html[data-theme^='light'] .App .RolevayaHomeWidget-arrow:hover,
+html[data-theme^='light'] .App .RolevayaHomeWidget-arrow:focus {
+  border: 0 !important;
+}
+
 @media (max-width: 768px) {
   .RolevayaHomeWidget {
     margin: 32px 0 8px;

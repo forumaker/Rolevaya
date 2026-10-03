@@ -166,6 +166,15 @@ return [
             'forumaker-rolevaya.arenaTagSlug'
         ),
 
+    // fof/seo is a soft dependency: without it these pages just keep the
+    // sitewide title/description.
+    (new Extend\Conditional())
+        ->whenExtensionEnabled('fof-seo', fn () => [
+            (new \FoF\Seo\Extend\SEO())
+                ->addExtender('rolevayaHallOfFame', Seo\HallOfFamePage::class)
+                ->addExtender('rolevayaUserDirectory', Seo\UserDirectoryDescription::class),
+        ]),
+
     (new Extend\Console())
         ->command(RecalculateUserActivity::class)
         ->command(RecalculateCharacterSheets::class)
