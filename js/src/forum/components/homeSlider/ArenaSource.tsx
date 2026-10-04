@@ -142,7 +142,7 @@ export class ArenaSource {
       this.error = null;
     } catch (e: any) {
       if (!this.rows.length) {
-        this.error = e?.message || 'Похоже, Гримуар опять что-то сломал';
+        this.error = e?.message || 'Пожалуйста, обновите страницу 👀';
         this.rows = [];
       }
     } finally {
